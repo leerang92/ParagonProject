@@ -70,7 +70,7 @@ public:
 	TArray<UAnimMontage*> AttackMontages;
 
 	UFUNCTION(BlueprintCallable, Category = "Attack")
-	void ComboAttack();
+	virtual void ComboAttack();
 
 	UPROPERTY(BlueprintReadWrite, Category = "Attack")
 	bool SaveCombo;
@@ -87,7 +87,7 @@ protected:
 
 	// 현재 콤보 공격 초기화
 	UFUNCTION(BlueprintCallable, Category = "Attack", meta = (PrivateAllowed = true))
-		void ResetComboAttack();
+	virtual void ResetComboAttack();
 
 	/* Ability */
 	template<int T>

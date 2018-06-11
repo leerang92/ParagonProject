@@ -28,7 +28,6 @@ ABaseCharacter::ABaseCharacter()
 	AbilityFuncs[2] = &ABaseCharacter::Ability2;
 	AbilityFuncs[3] = &ABaseCharacter::PrimaryAbility;
 		
-
 	BaseTurnRate = 45.0f;
 	BaseLookUpRate = 45.0f;
 
@@ -40,8 +39,8 @@ ABaseCharacter::ABaseCharacter()
 	/* 스프링 카메라 컴포넌트 */
 	CameraArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Arm"));
 	CameraArm->SetupAttachment(RootComponent);
-	CameraArm->TargetArmLength = 300.0f;
-	CameraArm->bUsePawnControlRotation = false;
+	CameraArm->TargetArmLength = 450.0f;
+	CameraArm->bUsePawnControlRotation = true;
 
 	/* 카메라 컴포넌트 */
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera Comp"));
@@ -169,32 +168,12 @@ void ABaseCharacter::SetCameraParticle(UParticleSystem * NewParticle)
 
 void ABaseCharacter::StartAttack()
 {
-	// 공격 중이 아닐 시
-	if (!IsAttacking)
-	{
-		IsAttacking = true;
-		SaveCombo = true;
-		ComboAttack();
-	}
-	else if (!SaveCombo)
-	{
-		SaveCombo = true;
-	}
+
 }
 
 void ABaseCharacter::ComboAttack()
 {
-	if (SaveCombo && AttackMontages.Num() > 0)
-	{
-		// 공격 몽타주 애니메이션 재생
-		PlayAnimMontage(AttackMontages[AttackCount++], 1.0f, NAME_None);
 
-		// 마지막 공격 애니메이션일 시 초기화
-		if (AttackCount >= AttackMontages.Num())
-		{
-			AttackCount = 0;
-		}
-	}
 }
 
 void ABaseCharacter::StopAttack()

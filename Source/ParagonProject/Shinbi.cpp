@@ -27,6 +27,52 @@ void AShinbi::SetupPlayerInputComponent(UInputComponent * PlayerInputComponent)
 void AShinbi::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	UE_LOG(LogClass, Warning, TEXT("%f"), GetCharacterMovement()->GetWalkableFloorAngle());
+}
+
+void AShinbi::StartAttack()
+{
+	// 공격 중이 아닐 시
+	if (!IsAttacking)
+	{
+		IsAttacking = true;
+		SaveCombo = true;
+		ComboAttack();
+	}
+	else if (!SaveCombo)
+	{
+		SaveCombo = true;
+	}
+}
+
+void AShinbi::StopAttack()
+{
+	SaveCombo = false;
+}
+
+void AShinbi::ComboAttack()
+{
+	if (SaveCombo && AttackMontages.Num() > 0)
+	{
+		// 공격 몽타주 애니메이션 재생
+		PlayAnimMontage(AttackMontages[AttackCount++]);
+
+		// 마지막 공격 애니메이션일 시 초기화
+		if (AttackMontages.Num() <= AttackCount)
+		{
+			AttackCount = 0;
+		}
+	}
+}
+
+void AShinbi::ResetComboAttack()
+{
+	//--AttackCount;
+	//if (AttackCount < 0) { AttackCount = 0; }
+	//PlayAnimMontage(AttackMontages[AttackCount], 1.0f, TEXT("Recovery"));
+
+	Super::ResetComboAttack();
 }
 
 // Attack Wolves 스킬

@@ -54,6 +54,16 @@ public:
 protected:
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void StartAttack() override;
+
+	virtual void StopAttack() override;
+
+	virtual void ComboAttack() override;
+
+	virtual void ResetComboAttack() override;
+
+	FTimerHandle AttackTimer;
+
 	/* Ability */
 	virtual void PrimaryAbility() override;
 	virtual void Ability1() override;
