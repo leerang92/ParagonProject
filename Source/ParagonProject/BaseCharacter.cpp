@@ -34,18 +34,18 @@ ABaseCharacter::ABaseCharacter()
 	/* 컨트롤러 설정 */
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
-	bUseControllerRotationYaw = true;
+	bUseControllerRotationYaw = false;
 
 	/* 스프링 카메라 컴포넌트 */
 	CameraArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Arm"));
 	CameraArm->SetupAttachment(RootComponent);
 	CameraArm->TargetArmLength = 450.0f;
-	CameraArm->bUsePawnControlRotation = true;
+	CameraArm->bUsePawnControlRotation = false;
 
 	/* 카메라 컴포넌트 */
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera Comp"));
 	CameraComp->SetupAttachment(CameraArm, USpringArmComponent::SocketName);
-	CameraComp->bUsePawnControlRotation = false;
+	CameraComp->bUsePawnControlRotation = true;
 
 	/* 캐릭터 무브먼트 컴포넌트 */
 	GetCharacterMovement()->bOrientRotationToMovement = true;

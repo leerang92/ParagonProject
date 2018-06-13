@@ -3,6 +3,7 @@
 #include "Shinbi.h"
 #include "ShinbiWolf.h"
 #include "Runtime/Engine/Public/TimerManager.h"
+#include "Camera/CameraComponent.h"
 
 AShinbi::AShinbi()
 {
@@ -92,7 +93,7 @@ void AShinbi::Ability1()
 		SetCameraParticle(DashParticle); // 카메라에 대쉬 이펙트 실행
 
 		// 정면으로 대쉬
-		const FVector Velocity = GetVelocity().GetSafeNormal();
+		//const FVector Velocity = GetVelocity().GetSafeNormal();
 		LaunchCharacter(GetActorForwardVector() * DashPower, true, true);
 	}
 }
@@ -114,8 +115,8 @@ void AShinbi::Ability2()
 		{
 			WolfActor->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
 			Wolves.Add(WolfActor);
-			/*Wolves[i]->SetCirclingAngle(Angle);
-			Wolves[i]->Action(EWolfState::Circle);*/
+			Wolves[i]->SetCirclingAngle(Angle);
+			Wolves[i]->Action(EWolfState::Circle);
 		}
 		Angle += WolfInterval;
 	}
@@ -134,11 +135,11 @@ void AShinbi::StopAttackCast()
 	PlayAnimMontage(AttackWolvesMontage, 1.0f, TEXT("End"));
 
 	// 울프 액터 생성
-	const FVector SpawnVec = GetActorLocation() + GetActorForwardVector() - FVector(-100.0f, 0, 80.0f);
+	const FVector SpawnVec = GetActorLocation() + (GetActorForwardVector() * FVector(4.0f, 0, -6.0f));
 	AShinbiWolf* WolfActor = GetWorld()->SpawnActor<AShinbiWolf>(WolfClass, SpawnVec, GetActorRotation());
 	if (WolfActor)
 	{
-		//WolfActor->Action(EWolfState::Attack);
+		WolfActor->Action(EWolfState::Attack);
 	}
 }
 
@@ -146,8 +147,8 @@ void AShinbi::StopCircleWolves()
 {
 	for (auto wolves : Wolves)
 	{
-		//wolves->StopCirclingWovles();
-		//wolves->SetLifeSpan(0.01f);
+	/*	wolves->StopCirclingWovles();
+		wolves->SetLifeSpan(0.01f);*/
 	}
 	Wolves.Empty();
 }
