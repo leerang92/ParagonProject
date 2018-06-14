@@ -89,9 +89,11 @@ private:
 
 	int WolfIndex;
 
+	int MaxWolfNum;
+
+	void SetupWolves(const FVector SpawnVec, const FRotator SpawnRot, int SpawnNum = 1);
+
 	void CreateWolves();
 
-	void EnableWolves(FVector InitVec = FVector::ZeroVector, FRotator InitRot = FRotator::ZeroRotator);
-
-	void DisableWolves();
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 };

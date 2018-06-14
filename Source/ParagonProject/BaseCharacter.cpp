@@ -16,17 +16,11 @@ ABaseCharacter::ABaseCharacter()
 	AttackCount = 0;
 	SaveCombo = true;
 
-	/*AbilityFuncs.Add(&ABaseCharacter::AbilityR);
+	// 스킬 함수들 함수 포인터 배열에 바인드
+	AbilityFuncs.Add(&ABaseCharacter::AbilityMouseR);
 	AbilityFuncs.Add(&ABaseCharacter::Ability1);
 	AbilityFuncs.Add(&ABaseCharacter::Ability2);
-	AbilityFuncs.Add(&ABaseCharacter::Ability3);
-	AbilityFuncs.Add(&ABaseCharacter::Ability4);*/
-
-	// 스킬 함수들 함수 포인터 배열에 바인드
-	AbilityFuncs[0] = &ABaseCharacter::AbilityMouseR;
-	AbilityFuncs[1] = &ABaseCharacter::Ability1;
-	AbilityFuncs[2] = &ABaseCharacter::Ability2;
-	AbilityFuncs[3] = &ABaseCharacter::PrimaryAbility;
+	AbilityFuncs.Add(&ABaseCharacter::PrimaryAbility);
 		
 	BaseTurnRate = 45.0f;
 	BaseLookUpRate = 45.0f;

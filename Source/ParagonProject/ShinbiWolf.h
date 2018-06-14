@@ -33,7 +33,10 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Wolf State에 따라 행동할 함수 호출
-	void Action(EWolfState NewState);
+	void Action(const EWolfState NewState, const FVector InitVec = FVector::ZeroVector, const FRotator InitRot = FRotator::ZeroRotator);
+
+	UPROPERTY(EditAnywhere, Category = "Ability")
+	float AttackWolvesDuration;
 
 	// Attack Wolves 스킬 종료 시 생성할 이펙트
 	UPROPERTY(EditDefaultsOnly, Category = "Particle")
@@ -53,7 +56,13 @@ public:
 	void SpawnParticle(UParticleSystem* NewFX);
 
 	void SetDestroy();
+
+	UFUNCTION(BlueprintCallable, Category = "Wolves")
+	void SetEnable();
 	
+	UFUNCTION(BlueprintCallable, Category = "Wolves")
+	void SetDisable();
+
 private:
 	// 현재 상태에 맞는 함수를 업데이트하는 함수 포인터
 	typedef void(AShinbiWolf::*fp)();
@@ -92,6 +101,8 @@ private:
 
 	float StartAngle;
 
+	bool bIsEnable : 1;
+
 private:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
@@ -101,5 +112,7 @@ private:
 public:
 	UFUNCTION(BlueprintCallable, Category = "Shinbi Wolf")
 	FORCEINLINE EWolfState GetState() const { return CurrentState; }
+
+	FORCEINLINE bool IsEnable() const { return bIsEnable; }
 
 };

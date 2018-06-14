@@ -5,6 +5,7 @@
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "Runtime/Engine/Public/TimerManager.h"
 #include "Runtime/Engine/Classes/Components/CapsuleComponent.h"
+#include "Runtime/Engine/Classes/Components/SkeletalMeshComponent.h"
 
 // Sets default values
 AShinbiWolf::AShinbiWolf()
@@ -19,6 +20,8 @@ AShinbiWolf::AShinbiWolf()
 	Radius = 300.0f;
 	UpdateRot = 0.0f;
 	StartAngle = 0.0f;
+
+	AttackWolvesDuration = 1.5f;
 
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AShinbiWolf::BeginOverlap);
 }
@@ -43,14 +46,15 @@ void AShinbiWolf::Tick(float DeltaTime)
 	}
 }
 
-void AShinbiWolf::Action(EWolfState NewState)
+void AShinbiWolf::Action(const EWolfState NewState, const FVector InitVec, const FRotator InitRot)
 {
 	CurrentState = NewState;
+	//SetActorTransform(FTransform(InitRot, InitVec));
 	switch (CurrentState)
 	{
 	case EWolfState::Attack:
 		UpdateFunc = &AShinbiWolf::StartAttackWolves;
-		GetWorldTimerManager().SetTimer(AttackWolvesTimer, this, &AShinbiWolf::StopAttackWolves, 1.5f, false);
+		GetWorldTimerManager().SetTimer(AttackWolvesTimer, this, &AShinbiWolf::StopAttackWolves, AttackWolvesDuration, false);
 		break;
 	case EWolfState::Circle:
 		UpdateFunc = &AShinbiWolf::StartCirclingWolves;
@@ -77,6 +81,20 @@ void AShinbiWolf::SetDestroy()
 	SetLifeSpan(0.1f);
 }
 
+void AShinbiWolf::SetEnable()
+{
+	bIsEnable = true;
+	SetActorLocation(FVector::ZeroVector);
+	SetActorHiddenInGame(false);
+}
+
+void AShinbiWolf::SetDisable()
+{
+	bIsEnable = false;
+	Action(EWolfState::Idle);
+	SetActorHiddenInGame(true);
+}
+
 void AShinbiWolf::StartAttackWolves()
 {
 	AddMovementInput(GetActorForwardVector());
@@ -88,7 +106,8 @@ void AShinbiWolf::StopAttackWolves()
 	{
 		// 파티클 생성 후 객체 제거
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), AttackWolvesEndFX, GetActorTransform());
-		SetDestroy();
+		SetDisable();
+		//SetDestroy();
 	}
 }
 

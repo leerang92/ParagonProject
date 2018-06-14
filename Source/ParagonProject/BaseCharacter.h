@@ -94,7 +94,7 @@ protected:
 	void UseAbility();
 
 	typedef void(ABaseCharacter::*AbilityFp)();
-	AbilityFp AbilityFuncs[5];
+    TArray<AbilityFp> AbilityFuncs;
 
 	virtual void AbilityMouseR();
 	virtual void Ability1();
