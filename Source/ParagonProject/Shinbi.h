@@ -83,6 +83,8 @@ private:
 	UPROPERTY(Transient)
 	TArray<class AShinbiWolf*> Wolves;
 
+	TSet<int> CirclingIndexes;
+
 	// Circle Wolves 스킬 사용시 늑대 생성 간격
 	UPROPERTY(EditDefaultsOnly, Category = "Ability", meta = (AllowedPrivateAccess = "true"))
 	float WolfInterval;
@@ -91,7 +93,7 @@ private:
 
 	int MaxWolfNum;
 
-	void SetupWolves(const FVector SpawnVec, const FRotator SpawnRot, int SpawnNum = 1);
+	TSet<int> SetupWolves(const FVector SpawnVec, const FRotator SpawnRot, uint8 Type, int SpawnNum = 1);
 
 	void CreateWolves();
 

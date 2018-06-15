@@ -9,7 +9,6 @@
 UENUM(BlueprintType)
 enum class EWolfState : uint8
 {
-	None,
 	Idle,
 	Attack,
 	Circle,

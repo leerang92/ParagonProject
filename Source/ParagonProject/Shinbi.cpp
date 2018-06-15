@@ -73,10 +73,6 @@ void AShinbi::ComboAttack()
 
 void AShinbi::ResetComboAttack()
 {
-	//--AttackCount;
-	//if (AttackCount < 0) { AttackCount = 0; }
-	//PlayAnimMontage(AttackMontages[AttackCount], 1.0f, TEXT("Recovery"));
-
 	Super::ResetComboAttack();
 }
 
@@ -86,9 +82,6 @@ void AShinbi::AbilityMouseR()
 	// Attack Wolves 스킬 애니메이션 몽타주 실행
 	PlayAnimMontage(AttackWolvesMontage);
 	IsAttacking = true;
-
-
-	//UE_LOG(LogClass, Warning, TEXT("%d"), WolfsCount);
 }
 
 void AShinbi::StopAttackCast()
@@ -98,15 +91,7 @@ void AShinbi::StopAttackCast()
 
 	// 울프 액터 생성
 	const FVector SpawnVec = GetActorLocation() + (GetActorForwardVector() * FVector(0, 0, -6.0f));
-	SetupWolves(SpawnVec, GetActorRotation(), 1);
-	//Wolves[WolfIndex]->SetEnable();
-	//Wolves[WolfIndex]->Action(EWolfState::Attack);
-
-	//AShinbiWolf* WolfActor = GetWorld()->SpawnActor<AShinbiWolf>(WolfClass, SpawnVec, GetActorRotation());
-	//if (WolfActor)
-	//{
-	//	WolfActor->Action(EWolfState::Attack);
-	//}
+	SetupWolves(SpawnVec, GetActorRotation(), 1, 1);
 }
 
 // Dash
@@ -125,15 +110,22 @@ void AShinbi::Ability1()
 
 void AShinbi::Ability2()
 {
-	if (Wolves.Num() != 0)
-		return;
+	UE_LOG(LogClass, Warning, TEXT("Cirling Wolves"));
 
 	// 플레이어 CircleWovles 애니메이션 실행
 	PlayAnimMontage(CircleWolvesMontage);
 
 	// 늑대들 생성
+	CirclingIndexes = SetupWolves(GetActorLocation(), GetActorRotation(), 2, 4);
+
 	float Angle = 0.0f;
-	for (int i = 0; i < 4; ++i)
+	for (auto index : CirclingIndexes)
+	{
+		Wolves[index]->SetCirclingAngle(Angle);
+		Angle += WolfInterval;
+	}
+
+	/*for (int i = 0; i < 4; ++i)
 	{
 		AShinbiWolf* WolfActor = GetWorld()->SpawnActor<AShinbiWolf>(WolfClass, GetActorLocation(), FRotator::ZeroRotator);
 		if (WolfActor)
@@ -144,7 +136,7 @@ void AShinbi::Ability2()
 			Wolves[i]->Action(EWolfState::Circle);
 		}
 		Angle += WolfInterval;
-	}
+	}*/
 	// CirclingWolvesDuration 시간 후 울프 객체들 사라짐
 	GetWorldTimerManager().SetTimer(CircleWolvesTimer, this, &AShinbi::StopCircleWolves, CirclingWolvesDuration, false);
 }
@@ -156,29 +148,34 @@ void AShinbi::PrimaryAbility()
 
 void AShinbi::StopCircleWolves()
 {
-	for (auto wolves : Wolves)
+	for (auto Index : CirclingIndexes)
 	{
+		//Wolves[Index]->StopCircleWolves();
+		Wolves[Index]->SetDisable();
 	/*	wolves->StopCirclingWovles();
 		wolves->SetLifeSpan(0.01f);*/
 	}
-	Wolves.Empty();
+	CirclingIndexes.Empty();
 }
 
-void AShinbi::SetupWolves(const FVector SpawnVec, const FRotator SpawnRot, int SpawnNum)
+TSet<int> AShinbi::SetupWolves(const FVector SpawnVec, const FRotator SpawnRot, uint8 Type, int SpawnNum)
 {
+	TSet<int> Indexes;
 	// 현재 사용중이지 않은 늑대 액터 설정
-	for (int i = 0; i < SpawnNum;)
+	for (int SpawnCount = 0; SpawnCount < SpawnNum;)
 	{
 		if (!Wolves[WolfIndex]->IsHiddenEd())
 		{
 			Wolves[WolfIndex]->SetEnable();
 			Wolves[WolfIndex]->SetActorTransform(FTransform(SpawnRot, SpawnVec));
-			Wolves[WolfIndex]->Action(EWolfState::Attack);
-			++i;
+			Wolves[WolfIndex]->Action(static_cast<EWolfState>(Type));
+			Indexes.Add(WolfIndex);
+			++SpawnCount;
 		}
 		// 인덱스 순환
 		++WolfIndex %= MaxWolfNum;
 	}
+	return Indexes;
 }
 
 void AShinbi::CreateWolves()
