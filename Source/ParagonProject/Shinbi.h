@@ -76,6 +76,17 @@ protected:
 	// Circle Wolves 스킬 중단
 	void StopCircleWolves();
 
+	/* Primary 스킬 */
+	void SetPrimaryWolves(FVector NewLocation, float NewAngle);
+
+	FVector TargetLoc;
+
+	float PrimaryAngle;
+
+	float CountDown;
+
+	float PrimaryInterval;
+
 	// Circle Wolves 스킬 중단 타이머핸들
 	FTimerHandle CircleWolvesTimer;
 
@@ -87,6 +98,8 @@ private:
 	TSet<int> CirclingIndexes;
 
 	bool bIsCircling : 1;
+
+	bool bIsPrimary : 1;
 
 	// Circle Wolves 스킬 사용시 늑대 생성 간격
 	UPROPERTY(EditDefaultsOnly, Category = "Ability", meta = (AllowedPrivateAccess = "true"))

@@ -14,12 +14,17 @@ AShinbi::AShinbi()
 
 	WolfIndex = 0;
 	MaxWolfNum = 15;
+
+	CountDown = 5.0f;
+	PrimaryInterval = CountDown;
+	PrimaryAngle = 0.0f;
 }
 
 void AShinbi::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// 늑대 액터 생성(오브젝트풀)
 	CreateWolves();
 }
 
@@ -33,6 +38,21 @@ void AShinbi::SetupPlayerInputComponent(UInputComponent * PlayerInputComponent)
 void AShinbi::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (bIsPrimary)
+	{
+		CountDown -= DeltaTime;
+		if (CountDown < 0.0f)
+		{
+			bIsPrimary = false;
+		}
+		else if (CountDown <= PrimaryInterval)
+		{
+			SetPrimaryWolves(TargetLoc, PrimaryAngle);
+			PrimaryInterval -= 1.0f;
+			PrimaryAngle += 45.0f;
+		}
+	}
 }
 
 void AShinbi::StartAttack()
@@ -44,7 +64,7 @@ void AShinbi::StartAttack()
 		SaveCombo = true;
 		ComboAttack();
 	}
-	// 공격중일 시
+	// 이미 공격중일 시 콤보 이어하기
 	else if (!SaveCombo)
 	{
 		SaveCombo = true;
@@ -107,6 +127,7 @@ void AShinbi::Ability1()
 	}
 }
 
+// Circling Wolves 스킬
 void AShinbi::Ability2()
 {
 	if (bIsCircling)
@@ -118,6 +139,7 @@ void AShinbi::Ability2()
 	PlayAnimMontage(CircleWolvesMontage);
 	// 늑대들 생성
 	CirclingIndexes = SetupWolves(GetActorLocation(), GetActorRotation(), 2, 4);
+	// 늑대들 각도 설정
 	float Angle = 0.0f;
 	for (auto index : CirclingIndexes)
 	{
@@ -130,26 +152,41 @@ void AShinbi::Ability2()
 	bIsCircling = true;
 }
 
-void AShinbi::PrimaryAbility()
-{
-	APawn* Target = FocusView();
-	if (Target != nullptr) 
-	{
-		UE_LOG(LogClass, Warning, TEXT("%s"), *Target->GetName());
-		const FVector NewLoc = Target->GetActorLocation() + FVector(0, 0, 100.0f);
-		TSet<int> Index = SetupWolves(NewLoc, FRotator::ZeroRotator, 3, 5);
-	}
-}
-
 void AShinbi::StopCircleWolves()
 {
 	for (auto Index : CirclingIndexes)
 	{
-		//Wolves[Index]->StopCircleWolves();
-		Wolves[Index]->SetDisable();
+		// 제거 이펙트 생성 및 Disable
+		Wolves[Index]->StopCirclingWolves();
 	}
 	CirclingIndexes.Empty();
 	bIsCircling = false;
+}
+
+void AShinbi::PrimaryAbility()
+{
+	const APawn* Target = FocusView();
+	if (Target != nullptr)
+	{
+		TargetLoc = Target->GetActorLocation() + FVector(0, 0, 100.0f);
+		bIsPrimary = true;
+	}
+}
+
+void AShinbi::SetPrimaryWolves(FVector NewLocation, float NewAngle)
+{
+	const FVector RotationVec = FVector(80.0f, 0, 0);
+	const FVector Axis = FVector(0, 0, 1).GetSafeNormal();
+	const FVector ResultVec = RotationVec.RotateAngleAxis(PrimaryAngle, Axis);
+	NewLocation += ResultVec;
+
+	TSet<int> IndexSet = SetupWolves(NewLocation, FRotator::ZeroRotator, 3, 1);
+
+
+
+	/*FSetElementId SetId = IndexSet.FindId(0);
+	int index = IndexSet[SetId];
+	Wolves[index]->SetActorLocation(NewLocation);*/
 }
 
 TSet<int> AShinbi::SetupWolves(const FVector SpawnVec, const FRotator SpawnRot, uint8 Type, int SpawnNum)

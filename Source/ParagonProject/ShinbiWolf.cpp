@@ -79,15 +79,10 @@ void AShinbiWolf::SpawnParticle(UParticleSystem * NewFX)
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), NewFX, GetActorTransform());
 }
 
-void AShinbiWolf::SetDestroy()
-{
-	SetLifeSpan(0.1f);
-}
-
 void AShinbiWolf::SetEnable()
 {
 	bIsEnable = true;
-	SetActorLocation(FVector::ZeroVector);
+	//SetActorLocation(FVector::ZeroVector);
 	SetActorHiddenInGame(false);
 }
 
@@ -109,9 +104,8 @@ void AShinbiWolf::StopAttackWolves()
 	{
 		// 파티클 생성 후 객체 제거
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), AttackWolvesEndFX, GetActorTransform());
-		SetDisable();
-		//SetDestroy();
 	}
+	SetDisable();
 }
 
 void AShinbiWolf::StartCirclingWolves()
@@ -136,6 +130,12 @@ void AShinbiWolf::StartCirclingWolves()
 		FocusRot += FRotator(0, 0, 100.0f);
 		SetActorRelativeRotation(FocusRot);
 	}
+}
+
+void AShinbiWolf::StopCirclingWolves()
+{
+	SpawnParticle(CirclingRemovalFX);
+	SetDisable();
 }
 
 FVector AShinbiWolf::RotateActorPoint(FVector TargetLocation, const float Radius, const float Angle, const float RotationRate)
@@ -177,7 +177,8 @@ void AShinbiWolf::BeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor
 		if (CurrentState == EWolfState::Attack)
 		{
 			SpawnParticle(AttackWolvesImpactFX);
-			SetDestroy();
+			SetDisable();
+			//SetDestroy();
 		}
 		else if (CurrentState == EWolfState::Circle)
 		{

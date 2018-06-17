@@ -35,9 +35,11 @@ public:
 	// Wolf State에 따라 행동할 함수 호출
 	void Action(const EWolfState NewState, const FVector InitVec = FVector::ZeroVector, const FRotator InitRot = FRotator::ZeroRotator);
 
+	// Attack Wolves 스킬 지속 시간
 	UPROPERTY(EditAnywhere, Category = "Ability")
 	float AttackWolvesDuration;
 
+	/* 파티클 변수들 */
 	// Attack Wolves 스킬 종료 시 생성할 이펙트
 	UPROPERTY(EditDefaultsOnly, Category = "Particle")
 	UParticleSystem* AttackWolvesEndFX;
@@ -50,16 +52,24 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Particle")
 	UParticleSystem* CirclingWolvesImpactFX;
 
-	void SetCirclingAngle(float NewAngle);
+	// Circling Wolves 종료시 이펙트
+	UPROPERTY(EditDefaultsOnly, Category = "Particle")
+	UParticleSystem* CirclingRemovalFX;
 
 	// 이펙트 생성 함수
 	void SpawnParticle(UParticleSystem* NewFX);
 
-	void SetDestroy();
+	// 늑대 각도 변수 설정
+	void SetCirclingAngle(float NewAngle);
 
+	// Circling Wolves 스킬 중단
+	void StopCirclingWolves();
+
+	// 액터 활성화
 	UFUNCTION(BlueprintCallable, Category = "Wolves")
 	void SetEnable();
 	
+	// 액터 비활성화
 	UFUNCTION(BlueprintCallable, Category = "Wolves")
 	void SetDisable();
 
@@ -68,6 +78,7 @@ private:
 	typedef void(AShinbiWolf::*fp)();
 	fp UpdateFunc;
 
+	// 현재 상태 변수
 	EWolfState CurrentState;
 
 	/* Attack Wolves */
@@ -103,6 +114,7 @@ private:
 
 	bool bIsEnable : 1;
 
+	/* Primary 스킬 */
 	void StartPrimary();
 
 	void StopPrimary();
