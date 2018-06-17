@@ -83,7 +83,10 @@ private:
 	UPROPERTY(Transient)
 	TArray<class AShinbiWolf*> Wolves;
 
+	// Circling Wolves 스킬 사용시 생성된 늑대 인덱스들
 	TSet<int> CirclingIndexes;
+
+	bool bIsCircling : 1;
 
 	// Circle Wolves 스킬 사용시 늑대 생성 간격
 	UPROPERTY(EditDefaultsOnly, Category = "Ability", meta = (AllowedPrivateAccess = "true"))

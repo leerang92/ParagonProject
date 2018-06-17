@@ -12,6 +12,7 @@ enum class EWolfState : uint8
 	Idle,
 	Attack,
 	Circle,
+	Primary,
 };
 
 UCLASS()
@@ -101,6 +102,10 @@ private:
 	float StartAngle;
 
 	bool bIsEnable : 1;
+
+	void StartPrimary();
+
+	void StopPrimary();
 
 private:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;

@@ -59,6 +59,9 @@ void AShinbiWolf::Action(const EWolfState NewState, const FVector InitVec, const
 	case EWolfState::Circle:
 		UpdateFunc = &AShinbiWolf::StartCirclingWolves;
 		break;
+	case EWolfState::Primary:
+		UpdateFunc = &AShinbiWolf::StartPrimary;
+		break;
 	}
 }
 
@@ -146,6 +149,16 @@ FVector AShinbiWolf::RotateActorPoint(FVector TargetLocation, const float Radius
 	TargetLocation += ResultVec;
 
 	return TargetLocation;
+}
+
+void AShinbiWolf::StartPrimary()
+{
+	GetCharacterMovement()->GravityScale = 0.0f;
+}
+
+void AShinbiWolf::StopPrimary()
+{
+	GetCharacterMovement()->GravityScale = 1.0f;
 }
 
 void AShinbiWolf::EndPlay(const EEndPlayReason::Type EndPlayReason)

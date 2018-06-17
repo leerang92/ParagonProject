@@ -14,7 +14,8 @@ class PARAGONPROJECT_API AParagonProjectGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
-	
+public:
+	AParagonProjectGameModeBase();
 	
 	
 };

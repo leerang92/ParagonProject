@@ -103,47 +103,42 @@ void AShinbi::Ability1()
 		SetCameraParticle(DashParticle); // 카메라에 대쉬 이펙트 실행
 
 		// 정면으로 대쉬
-		//const FVector Velocity = GetVelocity().GetSafeNormal();
 		LaunchCharacter(GetActorForwardVector() * DashPower, true, true);
 	}
 }
 
 void AShinbi::Ability2()
 {
-	UE_LOG(LogClass, Warning, TEXT("Cirling Wolves"));
+	if (bIsCircling)
+	{
+		return;
+	}
 
 	// 플레이어 CircleWovles 애니메이션 실행
 	PlayAnimMontage(CircleWolvesMontage);
-
 	// 늑대들 생성
 	CirclingIndexes = SetupWolves(GetActorLocation(), GetActorRotation(), 2, 4);
-
 	float Angle = 0.0f;
 	for (auto index : CirclingIndexes)
 	{
 		Wolves[index]->SetCirclingAngle(Angle);
 		Angle += WolfInterval;
 	}
-
-	/*for (int i = 0; i < 4; ++i)
-	{
-		AShinbiWolf* WolfActor = GetWorld()->SpawnActor<AShinbiWolf>(WolfClass, GetActorLocation(), FRotator::ZeroRotator);
-		if (WolfActor)
-		{
-			WolfActor->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
-			Wolves.Add(WolfActor);
-			Wolves[i]->SetCirclingAngle(Angle);
-			Wolves[i]->Action(EWolfState::Circle);
-		}
-		Angle += WolfInterval;
-	}*/
 	// CirclingWolvesDuration 시간 후 울프 객체들 사라짐
 	GetWorldTimerManager().SetTimer(CircleWolvesTimer, this, &AShinbi::StopCircleWolves, CirclingWolvesDuration, false);
+
+	bIsCircling = true;
 }
 
 void AShinbi::PrimaryAbility()
 {
-
+	APawn* Target = FocusView();
+	if (Target != nullptr) 
+	{
+		UE_LOG(LogClass, Warning, TEXT("%s"), *Target->GetName());
+		const FVector NewLoc = Target->GetActorLocation() + FVector(0, 0, 100.0f);
+		TSet<int> Index = SetupWolves(NewLoc, FRotator::ZeroRotator, 3, 5);
+	}
 }
 
 void AShinbi::StopCircleWolves()
@@ -152,10 +147,9 @@ void AShinbi::StopCircleWolves()
 	{
 		//Wolves[Index]->StopCircleWolves();
 		Wolves[Index]->SetDisable();
-	/*	wolves->StopCirclingWovles();
-		wolves->SetLifeSpan(0.01f);*/
 	}
 	CirclingIndexes.Empty();
+	bIsCircling = false;
 }
 
 TSet<int> AShinbi::SetupWolves(const FVector SpawnVec, const FRotator SpawnRot, uint8 Type, int SpawnNum)
