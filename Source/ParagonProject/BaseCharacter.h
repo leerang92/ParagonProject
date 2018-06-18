@@ -93,6 +93,7 @@ protected:
 	template<int T>
 	void UseAbility();
 
+	// Ability 함수 포인터 및 배열
 	typedef void(ABaseCharacter::*AbilityFp)();
     TArray<AbilityFp> AbilityFuncs;
 

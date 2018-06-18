@@ -60,6 +60,8 @@ void AShinbiWolf::Action(const EWolfState NewState, const FVector InitVec, const
 		UpdateFunc = &AShinbiWolf::StartCirclingWolves;
 		break;
 	case EWolfState::Primary:
+		GetCharacterMovement()->GravityScale = 0.0f;
+		PlayAnimMontage(LeapMontage);
 		UpdateFunc = &AShinbiWolf::StartPrimary;
 		break;
 	}
@@ -82,7 +84,6 @@ void AShinbiWolf::SpawnParticle(UParticleSystem * NewFX)
 void AShinbiWolf::SetEnable()
 {
 	bIsEnable = true;
-	//SetActorLocation(FVector::ZeroVector);
 	SetActorHiddenInGame(false);
 }
 
@@ -93,6 +94,11 @@ void AShinbiWolf::SetDisable()
 	SetActorHiddenInGame(true);
 }
 
+void AShinbiWolf::SetIsSpawn(bool bSpawn)
+{
+	bIsSpawn = bSpawn;
+}
+
 void AShinbiWolf::StartAttackWolves()
 {
 	AddMovementInput(GetActorForwardVector());
@@ -100,7 +106,8 @@ void AShinbiWolf::StartAttackWolves()
 
 void AShinbiWolf::StopAttackWolves()
 {
-	if (AttackWolvesEndFX != nullptr)
+	// 파티클이 있고 액터가 숨겨지지 않았다면
+	if (AttackWolvesEndFX != nullptr && IsHiddenEd())
 	{
 		// 파티클 생성 후 객체 제거
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), AttackWolvesEndFX, GetActorTransform());
@@ -138,6 +145,11 @@ void AShinbiWolf::StopCirclingWolves()
 	SetDisable();
 }
 
+void AShinbiWolf::SetTargetLocation(const FVector & TargetLoc)
+{
+	TargetLocation = TargetLoc;
+}
+
 FVector AShinbiWolf::RotateActorPoint(FVector TargetLocation, const float Radius, const float Angle, const float RotationRate)
 {
 	// Radius 떨어진 곳에 늑대가 회전할 위치
@@ -153,7 +165,15 @@ FVector AShinbiWolf::RotateActorPoint(FVector TargetLocation, const float Radius
 
 void AShinbiWolf::StartPrimary()
 {
-	GetCharacterMovement()->GravityScale = 0.0f;
+	const FVector DistanceVec = TargetLocation - GetActorLocation();
+	const FRotator FocusRot = FRotationMatrix::MakeFromX(DistanceVec).Rotator();
+	SetActorRelativeRotation(FocusRot);
+
+	if (bIsSpawn)
+	{
+		const FVector MovementVec = GetActorLocation() + GetActorForwardVector() * 8.0f;
+		SetActorLocation(MovementVec);
+	}
 }
 
 void AShinbiWolf::StopPrimary()
@@ -172,13 +192,12 @@ void AShinbiWolf::BeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor
 {
 	ACharacter* MyPlayer = UGameplayStatics::GetPlayerCharacter(this, 0);
 	if (OtherActor != nullptr && OtherActor != this && OtherComp != nullptr &&
-		OtherActor->GetClass() != this->GetClass() && OtherActor != MyPlayer)
+		OtherActor->GetClass() != this->GetClass())
 	{
-		if (CurrentState == EWolfState::Attack)
+		if (CurrentState == EWolfState::Attack || CurrentState == EWolfState::Primary)
 		{
 			SpawnParticle(AttackWolvesImpactFX);
 			SetDisable();
-			//SetDestroy();
 		}
 		else if (CurrentState == EWolfState::Circle)
 		{

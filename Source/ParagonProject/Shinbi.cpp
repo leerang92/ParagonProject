@@ -7,17 +7,21 @@
 
 AShinbi::AShinbi()
 {
-	DashPower = 4500.0f;
-	WolfInterval = 90.0f;
+	PrimaryActorTick.bCanEverTick = false;
+
+	/* 늑대 오브젝트 풀 */
+	MaxWolfNum = 15;
 	WolfIndex = 0;
+
+	DashPower = 4500.0f;
+
+	/* Circling Wolves 스킬 */
+	WolfInterval = 90.0f;
 	CirclingWolvesDuration = 7.0f;
 
-	WolfIndex = 0;
-	MaxWolfNum = 15;
-
-	CountDown = 5.0f;
-	PrimaryInterval = CountDown;
-	PrimaryAngle = 0.0f;
+	/* Primary 스킬 */
+	PrimaryAngleInterval = 60.0f;
+	PrimarySpawnTime = 0.5f;
 }
 
 void AShinbi::BeginPlay()
@@ -38,21 +42,6 @@ void AShinbi::SetupPlayerInputComponent(UInputComponent * PlayerInputComponent)
 void AShinbi::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (bIsPrimary)
-	{
-		CountDown -= DeltaTime;
-		if (CountDown < 0.0f)
-		{
-			bIsPrimary = false;
-		}
-		else if (CountDown <= PrimaryInterval)
-		{
-			SetPrimaryWolves(TargetLoc, PrimaryAngle);
-			PrimaryInterval -= 1.0f;
-			PrimaryAngle += 45.0f;
-		}
-	}
 }
 
 void AShinbi::StartAttack()
@@ -71,11 +60,6 @@ void AShinbi::StartAttack()
 	}
 }
 
-void AShinbi::StopAttack()
-{
-	SaveCombo = false;
-}
-
 void AShinbi::ComboAttack()
 {
 	if (SaveCombo && AttackMontages.Num() > 0)
@@ -91,17 +75,11 @@ void AShinbi::ComboAttack()
 	}
 }
 
-void AShinbi::ResetComboAttack()
-{
-	Super::ResetComboAttack();
-}
-
 // Attack Wolves 스킬
 void AShinbi::AbilityMouseR()
 {
 	// Attack Wolves 스킬 애니메이션 몽타주 실행
 	PlayAnimMontage(AttackWolvesMontage);
-	IsAttacking = true;
 }
 
 void AShinbi::StopAttackCast()
@@ -168,25 +146,39 @@ void AShinbi::PrimaryAbility()
 	const APawn* Target = FocusView();
 	if (Target != nullptr)
 	{
-		TargetLoc = Target->GetActorLocation() + FVector(0, 0, 100.0f);
-		bIsPrimary = true;
+		const FVector TargetLoc = Target->GetActorLocation();
+		float Angle = 0.0f;
+		float TimeInterval = 0.001f;
+
+		// 타이머를 사용하여 시간차를 두고 늑대 생성
+		for (auto& timer : SpawnWolvesTimer)
+		{
+			// 타이머 설정
+			FTimerDelegate PrimaryTimerDel = FTimerDelegate::CreateUObject(this, &AShinbi::SetPrimaryWolves, TargetLoc, Angle);
+			GetWorldTimerManager().SetTimer(timer, PrimaryTimerDel, TimeInterval, false);
+
+			// 다음 늑대의 각도, 생성 시간 설정
+			Angle += PrimaryAngleInterval;
+			TimeInterval += PrimarySpawnTime;
+		}
 	}
 }
 
 void AShinbi::SetPrimaryWolves(FVector NewLocation, float NewAngle)
 {
-	const FVector RotationVec = FVector(80.0f, 0, 0);
+	/* 타겟을 중심으로 PrimaryAngle만큼 주위 위치값 구함 */
+	FVector WolfLocation = NewLocation;
+	const FVector RotationVec = FVector(250.0f, 0, 100.0f);
 	const FVector Axis = FVector(0, 0, 1).GetSafeNormal();
-	const FVector ResultVec = RotationVec.RotateAngleAxis(PrimaryAngle, Axis);
-	NewLocation += ResultVec;
+	const FVector ResultVec = RotationVec.RotateAngleAxis(NewAngle, Axis);
+	WolfLocation += ResultVec;
 
-	TSet<int> IndexSet = SetupWolves(NewLocation, FRotator::ZeroRotator, 3, 1);
-
-
-
-	/*FSetElementId SetId = IndexSet.FindId(0);
-	int index = IndexSet[SetId];
-	Wolves[index]->SetActorLocation(NewLocation);*/
+	// 늑대 활성화
+	TSet<int> IndexSet = SetupWolves(WolfLocation, FRotator::ZeroRotator, 3, 1);
+	for (auto& index : IndexSet)
+	{
+		Wolves[index]->SetTargetLocation(NewLocation);
+	}
 }
 
 TSet<int> AShinbi::SetupWolves(const FVector SpawnVec, const FRotator SpawnRot, uint8 Type, int SpawnNum)

@@ -65,6 +65,8 @@ public:
 	// Circling Wolves 스킬 중단
 	void StopCirclingWolves();
 
+	void SetTargetLocation(const FVector& TargetLoc);
+
 	// 액터 활성화
 	UFUNCTION(BlueprintCallable, Category = "Wolves")
 	void SetEnable();
@@ -72,6 +74,12 @@ public:
 	// 액터 비활성화
 	UFUNCTION(BlueprintCallable, Category = "Wolves")
 	void SetDisable();
+
+	UFUNCTION(BlueprintCallable, Category = "Ability")
+	void SetIsSpawn(bool bSpawn);
+
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	UAnimMontage* LeapMontage;
 
 private:
 	// 현재 상태에 맞는 함수를 업데이트하는 함수 포인터
@@ -118,6 +126,10 @@ private:
 	void StartPrimary();
 
 	void StopPrimary();
+
+	FVector TargetLocation;
+
+	bool bIsSpawn : 1;
 
 private:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;

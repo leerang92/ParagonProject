@@ -26,6 +26,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Wolf")
 	TSubclassOf<class AShinbiWolf> WolfClass;
 
+	// 생성할 늑대 수
+	UPROPERTY(EditDefaultsOnly, Category = "Wolves")
+	int MaxWolfNum;
+
 	// Dash 스킬 나아갈 크기 변수
 	UPROPERTY(EditAnywhere, Category = "Ability")
 	float DashPower;
@@ -33,6 +37,14 @@ public:
 	// CirclingWolves(Abiility2) 지속 시간 변수
 	UPROPERTY(EditAnywhere, Category = "Ability")
 	float CirclingWolvesDuration;
+
+	// Primary 스킬 각 늑대들의 각도 간격
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	float PrimaryAngleInterval;
+
+	// Primary 스킬 늑대 생성 시간
+	UPROPERTY(EditDefaultsOnly, Category = "Ability")
+	float PrimarySpawnTime;
 
 	// 대쉬 스킬 사용시 생성할 파티클
 	UPROPERTY(EditDefaultsOnly, Category = "Particle")
@@ -54,13 +66,10 @@ public:
 protected:
 	virtual void Tick(float DeltaTime) override;
 
+	/* Attack */
 	virtual void StartAttack() override;
 
-	virtual void StopAttack() override;
-
 	virtual void ComboAttack() override;
-
-	virtual void ResetComboAttack() override;
 
 	FTimerHandle AttackTimer;
 
@@ -78,18 +87,6 @@ protected:
 
 	/* Primary 스킬 */
 	void SetPrimaryWolves(FVector NewLocation, float NewAngle);
-
-	FVector TargetLoc;
-
-	float PrimaryAngle;
-
-	float CountDown;
-
-	float PrimaryInterval;
-
-	// Circle Wolves 스킬 중단 타이머핸들
-	FTimerHandle CircleWolvesTimer;
-
 private:
 	UPROPERTY(Transient)
 	TArray<class AShinbiWolf*> Wolves;
@@ -97,20 +94,27 @@ private:
 	// Circling Wolves 스킬 사용시 생성된 늑대 인덱스들
 	TSet<int> CirclingIndexes;
 
-	bool bIsCircling : 1;
-
-	bool bIsPrimary : 1;
-
 	// Circle Wolves 스킬 사용시 늑대 생성 간격
 	UPROPERTY(EditDefaultsOnly, Category = "Ability", meta = (AllowedPrivateAccess = "true"))
 	float WolfInterval;
 
+	bool bIsCircling : 1;
+
+	bool bIsPrimary : 1;
+
+	// Circle Wolves 스킬 중단 타이머핸들
+	FTimerHandle CircleWolvesTimer;
+
+	// Primary 스킬 늑대 생성 타이머핸들
+	FTimerHandle SpawnWolvesTimer[6];
+
+	// 현재 늑대 배열의 인덱스
 	int WolfIndex;
 
-	int MaxWolfNum;
-
+	// 늑대 활성화 함수
 	TSet<int> SetupWolves(const FVector SpawnVec, const FRotator SpawnRot, uint8 Type, int SpawnNum = 1);
 
+	// 게임 시작시 늑대 생성
 	void CreateWolves();
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;

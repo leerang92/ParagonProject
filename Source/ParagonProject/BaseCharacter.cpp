@@ -187,6 +187,7 @@ template<int T>
 void ABaseCharacter::UseAbility()
 {
 	ResetComboAttack();
+	StopAttack();
 	(this->*(AbilityFuncs[T]))();
 }
 
