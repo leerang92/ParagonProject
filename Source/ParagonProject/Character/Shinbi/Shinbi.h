@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BaseCharacter.h"
+#include "Character/BaseCharacter.h"
 #include "Shinbi.generated.h"
 
 /**
@@ -40,11 +40,11 @@ public:
 
 	// Primary 스킬 각 늑대들의 각도 간격
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")
-	float PrimaryAngleInterval;
+	float UltimateAngleInterval;
 
 	// Primary 스킬 늑대 생성 시간
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")
-	float PrimarySpawnTime;
+	float UltimateSpawnTime;
 
 	// 대쉬 스킬 사용시 생성할 파티클
 	UPROPERTY(EditDefaultsOnly, Category = "Particle")
@@ -74,7 +74,7 @@ protected:
 	FTimerHandle AttackTimer;
 
 	/* Ability */
-	virtual void PrimaryAbility() override;
+	virtual void Ultimate() override;
 	virtual void Ability1() override;
 	virtual void Ability2() override;
 	virtual void AbilityMouseR() override;
@@ -86,7 +86,9 @@ protected:
 	void StopCircleWolves();
 
 	/* Primary 스킬 */
-	void SetPrimaryWolves(FVector NewLocation, float NewAngle);
+	void SetUltimateWolves(int Index);
+
+	FVector SetAngle(FVector NewLocation, float NewAngle);
 private:
 	UPROPERTY(Transient)
 	TArray<class AShinbiWolf*> Wolves;
@@ -100,13 +102,13 @@ private:
 
 	bool bIsCircling : 1;
 
-	bool bIsPrimary : 1;
+	bool bIsUltimate : 1;
 
 	// Circle Wolves 스킬 중단 타이머핸들
 	FTimerHandle CircleWolvesTimer;
 
 	// Primary 스킬 늑대 생성 타이머핸들
-	FTimerHandle SpawnWolvesTimer[6];
+	FTimerHandle SpawnWolvesTimer[8];
 
 	// 현재 늑대 배열의 인덱스
 	int WolfIndex;

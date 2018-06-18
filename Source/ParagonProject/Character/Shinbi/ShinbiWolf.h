@@ -56,6 +56,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Particle")
 	UParticleSystem* CirclingRemovalFX;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Particle")
+	UParticleSystem* UltHeartFX;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Particle")
+	UParticleSystem* UltEyeFX;
+
 	// 이펙트 생성 함수
 	void SpawnParticle(UParticleSystem* NewFX);
 
@@ -81,6 +87,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage* LeapMontage;
 
+	void StartUltimate();
+
 private:
 	// 현재 상태에 맞는 함수를 업데이트하는 함수 포인터
 	typedef void(AShinbiWolf::*fp)();
@@ -88,6 +96,8 @@ private:
 
 	// 현재 상태 변수
 	EWolfState CurrentState;
+
+	FRotator LookAtTarget(FVector MyLocation, FVector TargetLocation) const;
 
 	/* Attack Wolves */
 	// Attack Wolves 스킬 시작
@@ -123,9 +133,11 @@ private:
 	bool bIsEnable : 1;
 
 	/* Primary 스킬 */
-	void StartPrimary();
+	void UpdateUltimate();
 
-	void StopPrimary();
+	void StopUltimate();
+
+	void SetupUltimate();
 
 	FVector TargetLocation;
 

@@ -20,7 +20,7 @@ ABaseCharacter::ABaseCharacter()
 	AbilityFuncs.Add(&ABaseCharacter::AbilityMouseR);
 	AbilityFuncs.Add(&ABaseCharacter::Ability1);
 	AbilityFuncs.Add(&ABaseCharacter::Ability2);
-	AbilityFuncs.Add(&ABaseCharacter::PrimaryAbility);
+	AbilityFuncs.Add(&ABaseCharacter::Ultimate);
 		
 	BaseTurnRate = 45.0f;
 	BaseLookUpRate = 45.0f;
@@ -91,7 +91,7 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("AbilityMouseR", IE_Pressed, this, &ABaseCharacter::UseAbility<0>);
 	PlayerInputComponent->BindAction("Ability1", IE_Pressed, this, &ABaseCharacter::UseAbility<1>);
 	PlayerInputComponent->BindAction("Ability2", IE_Pressed, this, &ABaseCharacter::UseAbility<2>);
-	PlayerInputComponent->BindAction("PrimaryAbility", IE_Pressed, this, &ABaseCharacter::UseAbility<3>);
+	PlayerInputComponent->BindAction("Ultimate", IE_Pressed, this, &ABaseCharacter::UseAbility<3>);
 }
 
 
@@ -103,8 +103,6 @@ APawn * ABaseCharacter::FocusView()
 	// 카메라 위치와 회전값을 통해 트레이서 발사 위치 구함
 	Controller->GetPlayerViewPoint(CamLoc, CamRot);
 	const FVector EndLoc = CamLoc + (CamRot.Vector() * TraceDistance);
-
-	DrawDebugLine(GetWorld(), CamLoc, EndLoc, FColor::Red, false, 1.0f, 5);
 
 	// 트레이스 발사
 	FCollisionQueryParams TraceParam(TEXT("TracePlayerView"), true, this);
@@ -192,7 +190,7 @@ void ABaseCharacter::UseAbility()
 }
 
 /* 스킬 함수들 */
-void ABaseCharacter::PrimaryAbility()
+void ABaseCharacter::Ultimate()
 {
 }
 void ABaseCharacter::Ability1()

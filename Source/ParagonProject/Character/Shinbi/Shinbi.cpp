@@ -20,8 +20,8 @@ AShinbi::AShinbi()
 	CirclingWolvesDuration = 7.0f;
 
 	/* Primary 스킬 */
-	PrimaryAngleInterval = 60.0f;
-	PrimarySpawnTime = 0.5f;
+	UltimateAngleInterval = 60.0f;
+	UltimateSpawnTime = 0.5f;
 }
 
 void AShinbi::BeginPlay()
@@ -141,44 +141,53 @@ void AShinbi::StopCircleWolves()
 	bIsCircling = false;
 }
 
-void AShinbi::PrimaryAbility()
+void AShinbi::Ultimate()
 {
 	const APawn* Target = FocusView();
 	if (Target != nullptr)
 	{
 		const FVector TargetLoc = Target->GetActorLocation();
-		float Angle = 0.0f;
-		float TimeInterval = 0.001f;
+		float Angle = 120.0f;
+		float TimeInterval = 1.0f;
+		TSet<int> IndexSet;
 
-		// 타이머를 사용하여 시간차를 두고 늑대 생성
-		for (auto& timer : SpawnWolvesTimer)
+		for (int i = 0; i < 8; ++i)
 		{
-			// 타이머 설정
-			FTimerDelegate PrimaryTimerDel = FTimerDelegate::CreateUObject(this, &AShinbi::SetPrimaryWolves, TargetLoc, Angle);
-			GetWorldTimerManager().SetTimer(timer, PrimaryTimerDel, TimeInterval, false);
+			const FVector SpawnLoc = SetAngle(TargetLoc, Angle);
+			TSet<int> NewIndex = SetupWolves(SpawnLoc, FRotator::ZeroRotator, 3, 1);
+			for (auto& index : NewIndex)
+			{
+				Wolves[index]->SetTargetLocation(TargetLoc);
+				IndexSet.Add(index);
+			}
+			Angle += 15.0f;
+		}
 
-			// 다음 늑대의 각도, 생성 시간 설정
-			Angle += PrimaryAngleInterval;
-			TimeInterval += PrimarySpawnTime;
+		int TimerIndex = 0;
+		for (auto& index : IndexSet)
+		{
+			FTimerDelegate PrimaryTimerDel = FTimerDelegate::CreateUObject(this, &AShinbi::SetUltimateWolves, index);
+			GetWorldTimerManager().SetTimer(SpawnWolvesTimer[TimerIndex], PrimaryTimerDel, TimeInterval, false);
+			++TimerIndex;
+			TimeInterval += 0.3f;
 		}
 	}
 }
 
-void AShinbi::SetPrimaryWolves(FVector NewLocation, float NewAngle)
+void AShinbi::SetUltimateWolves(int Index)
+{
+	Wolves[Index]->StartUltimate();
+}
+
+FVector AShinbi::SetAngle(FVector NewLocation, float NewAngle)
 {
 	/* 타겟을 중심으로 PrimaryAngle만큼 주위 위치값 구함 */
-	FVector WolfLocation = NewLocation;
-	const FVector RotationVec = FVector(250.0f, 0, 100.0f);
+	const FVector RotationVec = FVector(500.0f, 0, 100.0f);
 	const FVector Axis = FVector(0, 0, 1).GetSafeNormal();
 	const FVector ResultVec = RotationVec.RotateAngleAxis(NewAngle, Axis);
-	WolfLocation += ResultVec;
+	NewLocation += ResultVec;
 
-	// 늑대 활성화
-	TSet<int> IndexSet = SetupWolves(WolfLocation, FRotator::ZeroRotator, 3, 1);
-	for (auto& index : IndexSet)
-	{
-		Wolves[index]->SetTargetLocation(NewLocation);
-	}
+	return NewLocation;
 }
 
 TSet<int> AShinbi::SetupWolves(const FVector SpawnVec, const FRotator SpawnRot, uint8 Type, int SpawnNum)

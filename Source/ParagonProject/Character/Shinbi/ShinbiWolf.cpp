@@ -60,9 +60,10 @@ void AShinbiWolf::Action(const EWolfState NewState, const FVector InitVec, const
 		UpdateFunc = &AShinbiWolf::StartCirclingWolves;
 		break;
 	case EWolfState::Primary:
-		GetCharacterMovement()->GravityScale = 0.0f;
-		PlayAnimMontage(LeapMontage);
-		UpdateFunc = &AShinbiWolf::StartPrimary;
+		//SpawnParticle(UltHeartFX);
+		SetupUltimate();
+		//PlayAnimMontage(LeapMontage);
+		//UpdateFunc = &AShinbiWolf::StartUltimate;
 		break;
 	}
 }
@@ -97,6 +98,13 @@ void AShinbiWolf::SetDisable()
 void AShinbiWolf::SetIsSpawn(bool bSpawn)
 {
 	bIsSpawn = bSpawn;
+}
+
+FRotator AShinbiWolf::LookAtTarget(FVector MyLocation, FVector TargetLocation) const
+{
+	const FVector DistanceVec = TargetLocation - MyLocation;
+	const FRotator FocusRot = FRotationMatrix::MakeFromX(DistanceVec).Rotator();
+	return FocusRot;
 }
 
 void AShinbiWolf::StartAttackWolves()
@@ -163,10 +171,9 @@ FVector AShinbiWolf::RotateActorPoint(FVector TargetLocation, const float Radius
 	return TargetLocation;
 }
 
-void AShinbiWolf::StartPrimary()
+void AShinbiWolf::UpdateUltimate()
 {
-	const FVector DistanceVec = TargetLocation - GetActorLocation();
-	const FRotator FocusRot = FRotationMatrix::MakeFromX(DistanceVec).Rotator();
+	const FRotator FocusRot = LookAtTarget(GetActorLocation(), TargetLocation);
 	SetActorRelativeRotation(FocusRot);
 
 	if (bIsSpawn)
@@ -176,9 +183,32 @@ void AShinbiWolf::StartPrimary()
 	}
 }
 
-void AShinbiWolf::StopPrimary()
+void AShinbiWolf::StartUltimate()
+{
+	GetMesh()->SetHiddenInGame(false);
+
+	const FRotator FocusRot = LookAtTarget(GetActorLocation(), TargetLocation);
+	FTransform ParticleTr = FTransform(FocusRot, GetActorLocation());
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), UltHeartFX, ParticleTr);
+
+	PlayAnimMontage(LeapMontage);
+	UpdateFunc = &AShinbiWolf::UpdateUltimate;
+}
+
+void AShinbiWolf::StopUltimate()
 {
 	GetCharacterMovement()->GravityScale = 1.0f;
+}
+
+void AShinbiWolf::SetupUltimate()
+{
+	GetCharacterMovement()->GravityScale = 0.0f;
+	GetMesh()->SetHiddenInGame(true);
+
+	const FRotator FocusRot = LookAtTarget(GetActorLocation(), TargetLocation);
+	SetActorRelativeRotation(FocusRot);
+
+	SpawnParticle(UltEyeFX);
 }
 
 void AShinbiWolf::EndPlay(const EEndPlayReason::Type EndPlayReason)

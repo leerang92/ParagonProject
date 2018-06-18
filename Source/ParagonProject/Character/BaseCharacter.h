@@ -100,7 +100,7 @@ protected:
 	virtual void AbilityMouseR();
 	virtual void Ability1();
 	virtual void Ability2();
-	virtual void PrimaryAbility();
+	virtual void Ultimate();
 
 protected:
 	inline const UCameraComponent * GetCameraComponent()
