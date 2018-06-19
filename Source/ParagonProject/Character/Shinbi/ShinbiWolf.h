@@ -12,7 +12,7 @@ enum class EWolfState : uint8
 	Idle,
 	Attack,
 	Circle,
-	Primary,
+	Ultimate,
 };
 
 UCLASS()
@@ -20,59 +20,57 @@ class PARAGONPROJECT_API AShinbiWolf : public ACharacter
 {
 	GENERATED_BODY()
 
-public:
-	// Sets default values for this character's properties
-	AShinbiWolf();
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
+	AShinbiWolf();
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Wolf State에 따라 행동할 함수 호출
-	void Action(const EWolfState NewState, const FVector InitVec = FVector::ZeroVector, const FRotator InitRot = FRotator::ZeroRotator);
+	void Action(const EWolfState NewState);
 
 	// Attack Wolves 스킬 지속 시간
 	UPROPERTY(EditAnywhere, Category = "Ability")
 	float AttackWolvesDuration;
 
+public:
 	/* 파티클 변수들 */
 	// Attack Wolves 스킬 종료 시 생성할 이펙트
-	UPROPERTY(EditDefaultsOnly, Category = "Particle")
+	UPROPERTY(EditDefaultsOnly, Category = "Attack Particle")
 	UParticleSystem* AttackWolvesEndFX;
 
 	// Attack Wolves 스킬 타격 이펙트
-	UPROPERTY(EditDefaultsOnly, Category = "Particle")
+	UPROPERTY(EditDefaultsOnly, Category = "Attack Particle")
 	UParticleSystem* AttackWolvesImpactFX;
 
 	// Circling Wolves 스킬 타격 이펙트
-	UPROPERTY(EditDefaultsOnly, Category = "Particle")
+	UPROPERTY(EditDefaultsOnly, Category = "Circling Particle")
 	UParticleSystem* CirclingWolvesImpactFX;
 
 	// Circling Wolves 종료시 이펙트
-	UPROPERTY(EditDefaultsOnly, Category = "Particle")
+	UPROPERTY(EditDefaultsOnly, Category = "Circling Particle")
 	UParticleSystem* CirclingRemovalFX;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Particle")
+	UPROPERTY(EditDefaultsOnly, Category = "Ultimate Particle")
 	UParticleSystem* UltHeartFX;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Particle")
+	UPROPERTY(EditDefaultsOnly, Category = "Ultimate Particle")
 	UParticleSystem* UltEyeFX;
 
-	// 이펙트 생성 함수
-	void SpawnParticle(UParticleSystem* NewFX);
+	UPROPERTY(EditDefaultsOnly, Category = "Ultimate Particle")
+	UParticleSystem* UltEndFX;
 
-	// 늑대 각도 변수 설정
-	void SetCirclingAngle(float NewAngle);
+	UPROPERTY(EditDefaultsOnly, Category = "Ultimate Particle")
+	UParticleSystem* UltFinalFX;
 
-	// Circling Wolves 스킬 중단
-	void StopCirclingWolves();
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	UAnimMontage* LeapMontage;
 
-	void SetTargetLocation(const FVector& TargetLoc);
-
+public:
 	// 액터 활성화
 	UFUNCTION(BlueprintCallable, Category = "Wolves")
 	void SetEnable();
@@ -81,13 +79,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Wolves")
 	void SetDisable();
 
+	// 늑대 각도 변수 설정
+	void SetCirclingAngle(float NewAngle);
+
+	// Circling Wolves 스킬 중단
+	void StopCirclingWolves();
+
 	UFUNCTION(BlueprintCallable, Category = "Ability")
 	void SetIsSpawn(bool bSpawn);
 
-	UPROPERTY(EditAnywhere, Category = "Animation")
-	UAnimMontage* LeapMontage;
+	// Ultimate 스킬 설정
+	void SetupUltimate(APawn* Target, const FVector NewLocation, float InRate);
 
-	void StartUltimate();
+	void SetUltimateFinal(bool bFinal);
 
 private:
 	// 현재 상태에 맞는 함수를 업데이트하는 함수 포인터
@@ -132,16 +136,23 @@ private:
 
 	bool bIsEnable : 1;
 
-	/* Primary 스킬 */
+	/* Ultimate 스킬 */
+	FTimerHandle UltTimer;
+
+	APawn* TargetPawn;
+
+	bool bIsSpawn : 1;
+
 	void UpdateUltimate();
 
 	void StopUltimate();
 
-	void SetupUltimate();
+	bool bIsFinal : 1;
 
-	FVector TargetLocation;
+	// 이펙트 생성 함수
+	void SpawnParticle(UParticleSystem* NewFX);
 
-	bool bIsSpawn : 1;
+	void StartUltimate();
 
 private:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -152,7 +163,4 @@ private:
 public:
 	UFUNCTION(BlueprintCallable, Category = "Shinbi Wolf")
 	FORCEINLINE EWolfState GetState() const { return CurrentState; }
-
-	FORCEINLINE bool IsEnable() const { return bIsEnable; }
-
 };

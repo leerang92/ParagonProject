@@ -46,9 +46,21 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Ability")
 	float UltimateSpawnTime;
 
+	void UltimateHitNotify();
+
+public:
 	// 대쉬 스킬 사용시 생성할 파티클
 	UPROPERTY(EditDefaultsOnly, Category = "Particle")
 	class UParticleSystem* DashParticle;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Particle")
+	class UParticleSystem* UltMarker;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Particle")
+	class UParticleSystem* UltMarkerDestroy;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Particle")
+	class UParticleSystem* UltFinalFX;
 
 	/* 스킬 몽타주 애니메이션 */
 	// Dash 스킬 몽타주 애니메이션
@@ -63,15 +75,19 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	class UAnimMontage* CircleWolvesMontage;
 
-protected:
-	virtual void Tick(float DeltaTime) override;
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	class UAnimMontage* UltMontage;
 
+	UPROPERTY(EditAnywhere, Category = Camera)
+	TSubclassOf<UCameraShake> CamShake;
+
+protected:
 	/* Attack */
 	virtual void StartAttack() override;
 
 	virtual void ComboAttack() override;
 
-	FTimerHandle AttackTimer;
+	FTimerHandle AttackEndTimer;
 
 	/* Ability */
 	virtual void Ultimate() override;
@@ -79,42 +95,55 @@ protected:
 	virtual void Ability2() override;
 	virtual void AbilityMouseR() override;
 
+private:
 	// Attack Wolves 스킬 캐스트 중단 및 늑대 소환
 	void StopAttackCast();
-
-	// Circle Wolves 스킬 중단
-	void StopCircleWolves();
-
-	/* Primary 스킬 */
-	void SetUltimateWolves(int Index);
-
-	FVector SetAngle(FVector NewLocation, float NewAngle);
-private:
-	UPROPERTY(Transient)
-	TArray<class AShinbiWolf*> Wolves;
 
 	// Circling Wolves 스킬 사용시 생성된 늑대 인덱스들
 	TSet<int> CirclingIndexes;
 
-	// Circle Wolves 스킬 사용시 늑대 생성 간격
-	UPROPERTY(EditDefaultsOnly, Category = "Ability", meta = (AllowedPrivateAccess = "true"))
-	float WolfInterval;
-
-	bool bIsCircling : 1;
-
-	bool bIsUltimate : 1;
-
 	// Circle Wolves 스킬 중단 타이머핸들
 	FTimerHandle CircleWolvesTimer;
 
+	// Circle Wolves 스킬 사용시 늑대 생성 간격
+	UPROPERTY(EditDefaultsOnly, Category = "Ability", meta = (AllowedPrivateAccess = "true"))
+	float CircleWolfRate;
+
+	bool bIsCircling : 1;
+
+	// Circle Wolves 스킬 중단
+	void StopCircleWolves();
+
+	FVector SetAngle(FVector NewLocation, float NewAngle);
+
+	bool bIsUltimate : 1;
+
+	int UltHitCount;
+
 	// Primary 스킬 늑대 생성 타이머핸들
-	FTimerHandle SpawnWolvesTimer[8];
+	FTimerHandle UltSpawnTimers[8];
+
+	class APawn* TargetPawn;
+
+	FTimerHandle UltShakeTimer;
+
+	void CameraShake();
+
+	FTimerHandle MarkerTimer;
+
+	void DestroyMarker();
+
+	UParticleSystemComponent* MarkerFX;
+
+private:
+	UPROPERTY(Transient)
+	TArray<class AShinbiWolf*> Wolves;
 
 	// 현재 늑대 배열의 인덱스
 	int WolfIndex;
 
 	// 늑대 활성화 함수
-	TSet<int> SetupWolves(const FVector SpawnVec, const FRotator SpawnRot, uint8 Type, int SpawnNum = 1);
+	TSet<int> ActiveWolves(const FVector SpawnVec, const FRotator SpawnRot, int SpawnNum = 1);
 
 	// 게임 시작시 늑대 생성
 	void CreateWolves();

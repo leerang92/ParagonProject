@@ -65,6 +65,7 @@ public:
 	// CamParticle 변수에 새 파티클 설정
 	void SetCameraParticle(UParticleSystem* NewParticle);
 
+public:
 	/* 공격 */
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	TArray<UAnimMontage*> AttackMontages;

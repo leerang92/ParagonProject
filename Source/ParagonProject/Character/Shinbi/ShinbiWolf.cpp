@@ -6,11 +6,12 @@
 #include "Runtime/Engine/Public/TimerManager.h"
 #include "Runtime/Engine/Classes/Components/CapsuleComponent.h"
 #include "Runtime/Engine/Classes/Components/SkeletalMeshComponent.h"
+#include "Character/Shinbi/Shinbi.h"
+
 
 // Sets default values
 AShinbiWolf::AShinbiWolf()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	CurrentState = EWolfState::Idle;
@@ -23,6 +24,7 @@ AShinbiWolf::AShinbiWolf()
 
 	AttackWolvesDuration = 1.5f;
 
+	// Collision 충돌 함수 바인드
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &AShinbiWolf::BeginOverlap);
 }
 
@@ -46,10 +48,9 @@ void AShinbiWolf::Tick(float DeltaTime)
 	}
 }
 
-void AShinbiWolf::Action(const EWolfState NewState, const FVector InitVec, const FRotator InitRot)
+void AShinbiWolf::Action(const EWolfState NewState)
 {
 	CurrentState = NewState;
-	//SetActorTransform(FTransform(InitRot, InitVec));
 	switch (CurrentState)
 	{
 	case EWolfState::Attack:
@@ -59,11 +60,8 @@ void AShinbiWolf::Action(const EWolfState NewState, const FVector InitVec, const
 	case EWolfState::Circle:
 		UpdateFunc = &AShinbiWolf::StartCirclingWolves;
 		break;
-	case EWolfState::Primary:
-		//SpawnParticle(UltHeartFX);
-		SetupUltimate();
-		//PlayAnimMontage(LeapMontage);
-		//UpdateFunc = &AShinbiWolf::StartUltimate;
+	case EWolfState::Ultimate:
+		//SetupUltimate();
 		break;
 	}
 }
@@ -84,13 +82,11 @@ void AShinbiWolf::SpawnParticle(UParticleSystem * NewFX)
 
 void AShinbiWolf::SetEnable()
 {
-	bIsEnable = true;
 	SetActorHiddenInGame(false);
 }
 
 void AShinbiWolf::SetDisable()
 {
-	bIsEnable = false;
 	Action(EWolfState::Idle);
 	SetActorHiddenInGame(true);
 }
@@ -153,11 +149,6 @@ void AShinbiWolf::StopCirclingWolves()
 	SetDisable();
 }
 
-void AShinbiWolf::SetTargetLocation(const FVector & TargetLoc)
-{
-	TargetLocation = TargetLoc;
-}
-
 FVector AShinbiWolf::RotateActorPoint(FVector TargetLocation, const float Radius, const float Angle, const float RotationRate)
 {
 	// Radius 떨어진 곳에 늑대가 회전할 위치
@@ -173,9 +164,11 @@ FVector AShinbiWolf::RotateActorPoint(FVector TargetLocation, const float Radius
 
 void AShinbiWolf::UpdateUltimate()
 {
-	const FRotator FocusRot = LookAtTarget(GetActorLocation(), TargetLocation);
+	// 타겟 방향으로 회전
+	const FRotator FocusRot = LookAtTarget(GetActorLocation(), TargetPawn->GetActorLocation());
 	SetActorRelativeRotation(FocusRot);
 
+	// 이동
 	if (bIsSpawn)
 	{
 		const FVector MovementVec = GetActorLocation() + GetActorForwardVector() * 8.0f;
@@ -185,30 +178,45 @@ void AShinbiWolf::UpdateUltimate()
 
 void AShinbiWolf::StartUltimate()
 {
-	GetMesh()->SetHiddenInGame(false);
-
-	const FRotator FocusRot = LookAtTarget(GetActorLocation(), TargetLocation);
-	FTransform ParticleTr = FTransform(FocusRot, GetActorLocation());
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), UltHeartFX, ParticleTr);
+	// 타겟 방향으로 파티클 생성
+	const FRotator FocusRot = LookAtTarget(GetActorLocation(), TargetPawn->GetActorLocation());
+	FTransform ParticleTr = FTransform(FocusRot + FRotator(40.0f, 0, 0), GetActorLocation());
+	UParticleSystemComponent* FXComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), UltHeartFX, ParticleTr);
+	FXComp->CustomTimeDilation = 1.5f;
 
 	PlayAnimMontage(LeapMontage);
+	GetMesh()->SetHiddenInGame(false);
 	UpdateFunc = &AShinbiWolf::UpdateUltimate;
 }
 
 void AShinbiWolf::StopUltimate()
 {
 	GetCharacterMovement()->GravityScale = 1.0f;
+	bIsSpawn = false;
+	SetDisable();
 }
 
-void AShinbiWolf::SetupUltimate()
+void AShinbiWolf::SetupUltimate(APawn* Target, const FVector NewLocation, float InRate)
 {
-	GetCharacterMovement()->GravityScale = 0.0f;
 	GetMesh()->SetHiddenInGame(true);
+	GetCharacterMovement()->GravityScale = 0.0f;
+	TargetPawn = Target;
+	SetActorLocation(NewLocation);
 
-	const FRotator FocusRot = LookAtTarget(GetActorLocation(), TargetLocation);
-	SetActorRelativeRotation(FocusRot);
+	// Eye 파티클 생성
+	if (TargetPawn != nullptr)
+	{
+		const FRotator FocusRot = LookAtTarget(GetActorLocation(), TargetPawn->GetActorLocation());
+		SetActorRelativeRotation(FocusRot);
+		SpawnParticle(UltEyeFX);
+	}
+	// 일정 시간 후 Ultimate 스킬 시작 함수 호출
+	GetWorldTimerManager().SetTimer(UltTimer, this, &AShinbiWolf::StartUltimate, InRate, false);
+}
 
-	SpawnParticle(UltEyeFX);
+void AShinbiWolf::SetUltimateFinal(bool bFinal)
+{
+	bIsFinal = bFinal;
 }
 
 void AShinbiWolf::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -220,11 +228,11 @@ void AShinbiWolf::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AShinbiWolf::BeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	ACharacter* MyPlayer = UGameplayStatics::GetPlayerCharacter(this, 0);
+	
 	if (OtherActor != nullptr && OtherActor != this && OtherComp != nullptr &&
 		OtherActor->GetClass() != this->GetClass())
 	{
-		if (CurrentState == EWolfState::Attack || CurrentState == EWolfState::Primary)
+		if (CurrentState == EWolfState::Attack)
 		{
 			SpawnParticle(AttackWolvesImpactFX);
 			SetDisable();
@@ -232,6 +240,16 @@ void AShinbiWolf::BeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor
 		else if (CurrentState == EWolfState::Circle)
 		{
 			SpawnParticle(CirclingWolvesImpactFX);
+		}
+		else if (CurrentState == EWolfState::Ultimate)
+		{
+			// 충돌 알림
+			ACharacter* MyPlayer = UGameplayStatics::GetPlayerCharacter(this, 0);
+			AShinbi* Shinbi = Cast<AShinbi>(MyPlayer);
+			Shinbi->UltimateHitNotify();
+
+			SpawnParticle(UltEndFX);
+			StopUltimate();
 		}
 	}
 }
