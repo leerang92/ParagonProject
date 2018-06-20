@@ -50,6 +50,8 @@ ABaseCharacter::ABaseCharacter()
 	/* 카메라 정면의 이펙트 */
 	CamParticle = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Ablity Paritcle"));
 	CamParticle->SetupAttachment(CameraComp);
+
+	AbilityComp = CreateDefaultSubobject<UAbilityComponent>(TEXT("Ability Component"));
 }
 
 // Called when the game starts or when spawned

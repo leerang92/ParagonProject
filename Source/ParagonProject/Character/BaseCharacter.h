@@ -8,6 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Runtime/Engine/Classes/Engine/World.h"
 #include "Runtime/Engine/Classes/Particles/ParticleSystemComponent.h"
+#include "Character/AbilityComponent.h"
 #include "BaseCharacter.generated.h"
 
 UCLASS()
@@ -24,6 +25,9 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UPROPERTY(EditAnywhere, Category = "Component")
+	class UAbilityComponent* AbilityComp;
 
 protected:
 	// Called when the game starts or when spawned
@@ -87,7 +91,7 @@ protected:
 	virtual void StopAttack();
 
 	// 현재 콤보 공격 초기화
-	UFUNCTION(BlueprintCallable, Category = "Attack", meta = (PrivateAllowed = true))
+	UFUNCTION(BlueprintCallable, Category = "Attack", meta = (AllowedPrivateAccess = true))
 	virtual void ResetComboAttack();
 
 	/* Ability */

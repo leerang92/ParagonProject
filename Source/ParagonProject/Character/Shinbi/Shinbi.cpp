@@ -86,10 +86,10 @@ void AShinbi::StopAttackCast()
 
 	// 울프 액터 생성
 	const FVector SpawnVec = GetActorLocation() + (GetActorForwardVector() * FVector(0, 0, -6.0f));
-	TSet<int> IndexSet = ActiveWolves(SpawnVec, GetActorRotation(), 1);
-	for (auto& index : IndexSet)
+	TSet<AShinbiWolf*> WolfSet = ActiveWolves(SpawnVec, GetActorRotation(), 1);
+	for (auto& wolf : WolfSet)
 	{
-		Wolves[index]->Action(EWolfState::Attack);
+		wolf->Action(EWolfState::Attack);
 	}
 }
 
@@ -117,29 +117,29 @@ void AShinbi::Ability2()
 	// 플레이어 CircleWovles 애니메이션 실행
 	PlayAnimMontage(CircleWolvesMontage);
 	// 늑대들 생성
-	CirclingIndexes = ActiveWolves(GetActorLocation(), GetActorRotation(), 4);
+	CirclingWolfSet = ActiveWolves(GetActorLocation(), GetActorRotation(), 4);
 	// 늑대들 각도 설정
 	float Angle = 0.0f;
-	for (auto index : CirclingIndexes)
+	for (auto wolf : CirclingWolfSet)
 	{
-		Wolves[index]->SetCirclingAngle(Angle);
-		Wolves[index]->Action(EWolfState::Circle);
+		wolf->SetCirclingAngle(Angle);
+		wolf->Action(EWolfState::Circle);
 		Angle += CircleWolfRate;
 	}
 	// CirclingWolvesDuration 시간 후 울프 객체들 사라짐
-	GetWorldTimerManager().SetTimer(CircleWolvesTimer, this, &AShinbi::StopCircleWolves, CirclingWolvesDuration, false);
+	//GetWorldTimerManager().SetTimer(CircleWolvesTimer, this, &AShinbi::StopCircleWolves, CirclingWolvesDuration, false);
 
 	bIsCircling = true;
 }
 
 void AShinbi::StopCircleWolves()
 {
-	for (auto Index : CirclingIndexes)
+	for (auto wolf : CirclingWolfSet)
 	{
 		// 제거 이펙트 생성 및 Disable
-		Wolves[Index]->StopCirclingWolves();
+		wolf->StopCirclingWolves();
 	}
-	CirclingIndexes.Empty();
+	CirclingWolfSet.Empty();
 	bIsCircling = false;
 }
 
@@ -161,25 +161,20 @@ void AShinbi::Ultimate()
 		Angle += 130.0f;
 
 		float TimeRate = 0.6f;
-		int LastIndex = 0;
 		// 늑대 생성
-		TSet<int> IndexSet = ActiveWolves(FVector::ZeroVector, FRotator::ZeroRotator, 8);
-		for (auto& index : IndexSet)
+		TSet<AShinbiWolf*> WolfSet = ActiveWolves(FVector::ZeroVector, FRotator::ZeroRotator, 8);
+		for (auto& wolf : WolfSet)
 		{
 			// 늑대 위치, 상태 설정
 			const FVector SpawnLoc = SetAngle(TargetPawn->GetActorLocation(), Angle);
-			Wolves[index]->SetupUltimate(TargetPawn, SpawnLoc, TimeRate);
-			Wolves[index]->Action(EWolfState::Ultimate);
+			wolf->SetupUltimate(TargetPawn, SpawnLoc, TimeRate);
+			wolf->Action(EWolfState::Ultimate);
 
 			TimeRate += 0.15f;
 			Angle += 15.0f;
-			LastIndex = index;
 		}
-
-		Wolves[LastIndex]->SetUltimateFinal(true);
 	}
 	GetWorldTimerManager().SetTimer(MarkerTimer, this, &AShinbi::DestroyMarker, 0.6f, false);
-
 }
 
 void AShinbi::DestroyMarker()
@@ -216,9 +211,9 @@ FVector AShinbi::SetAngle(FVector NewLocation, float NewAngle)
 	return NewLocation;
 }
 
-TSet<int> AShinbi::ActiveWolves(const FVector SpawnVec, const FRotator SpawnRot, int SpawnNum)
+TSet<AShinbiWolf*> AShinbi::ActiveWolves(const FVector SpawnVec, const FRotator SpawnRot, int SpawnNum)
 {
-	TSet<int> Indexes;
+	TSet<AShinbiWolf*> WolfSet;
 	// 현재 사용중이지 않은 늑대 액터 설정
 	for (int SpawnCount = 0; SpawnCount < SpawnNum;)
 	{
@@ -226,13 +221,13 @@ TSet<int> AShinbi::ActiveWolves(const FVector SpawnVec, const FRotator SpawnRot,
 		{
 			Wolves[WolfIndex]->SetEnable();
 			Wolves[WolfIndex]->SetActorTransform(FTransform(SpawnRot, SpawnVec));
-			Indexes.Add(WolfIndex);
+			WolfSet.Add(Wolves[WolfIndex]);
 			++SpawnCount;
 		}
 		// 인덱스 순환
 		++WolfIndex %= MaxWolfNum;
 	}
-	return Indexes;
+	return WolfSet;
 }
 
 void AShinbi::CreateWolves()
@@ -240,6 +235,7 @@ void AShinbi::CreateWolves()
 	for (int i = 0; i < MaxWolfNum; ++i)
 	{
 		Wolves.Add(GetWorld()->SpawnActor<AShinbiWolf>(WolfClass, GetActorLocation(), GetActorRotation()));
+		Wolves[i]->Init(this);
 		Wolves[i]->SetDisable();
 	}
 }

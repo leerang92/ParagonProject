@@ -30,12 +30,17 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void Init(class AShinbi* Owner);
+
 	// Wolf State에 따라 행동할 함수 호출
 	void Action(const EWolfState NewState);
 
 	// Attack Wolves 스킬 지속 시간
 	UPROPERTY(EditAnywhere, Category = "Ability")
 	float AttackWolvesDuration;
+
+	UPROPERTY(EditAnywhere, Category = "Ability")
+	float CirclWolvesDuration;
 
 public:
 	/* 파티클 변수들 */
@@ -94,6 +99,9 @@ public:
 	void SetUltimateFinal(bool bFinal);
 
 private:
+	UPROPERTY()
+	class AShinbi* OwnerPawn;
+
 	// 현재 상태에 맞는 함수를 업데이트하는 함수 포인터
 	typedef void(AShinbiWolf::*fp)();
 	fp UpdateFunc;
@@ -118,6 +126,8 @@ private:
 
 	/* Circling Wolves */
 	void StartCirclingWolves();
+
+	FTimerHandle CirRemoveTimer;
 
 	// 타겟으로부터 회전할 포인트 반환 함수
 	FVector RotateActorPoint(FVector TargetLocation, const float Radius, const float  Angle, const float RotationRate);

@@ -21,6 +21,7 @@ AShinbiWolf::AShinbiWolf()
 	Radius = 300.0f;
 	UpdateRot = 0.0f;
 	StartAngle = 0.0f;
+	CirclWolvesDuration = 7.0f;
 
 	AttackWolvesDuration = 1.5f;
 
@@ -48,6 +49,11 @@ void AShinbiWolf::Tick(float DeltaTime)
 	}
 }
 
+void AShinbiWolf::Init(AShinbi * Owner)
+{
+	OwnerPawn = Owner;
+}
+
 void AShinbiWolf::Action(const EWolfState NewState)
 {
 	CurrentState = NewState;
@@ -59,6 +65,7 @@ void AShinbiWolf::Action(const EWolfState NewState)
 		break;
 	case EWolfState::Circle:
 		UpdateFunc = &AShinbiWolf::StartCirclingWolves;
+		GetWorldTimerManager().SetTimer(CirRemoveTimer, this, &AShinbiWolf::StopCirclingWolves, CirclWolvesDuration, false);
 		break;
 	case EWolfState::Ultimate:
 		//SetupUltimate();
@@ -111,11 +118,7 @@ void AShinbiWolf::StartAttackWolves()
 void AShinbiWolf::StopAttackWolves()
 {
 	// 파티클이 있고 액터가 숨겨지지 않았다면
-	if (AttackWolvesEndFX != nullptr && IsHiddenEd())
-	{
-		// 파티클 생성 후 객체 제거
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), AttackWolvesEndFX, GetActorTransform());
-	}
+	SpawnParticle(AttackWolvesEndFX);
 	SetDisable();
 }
 
@@ -127,11 +130,11 @@ void AShinbiWolf::StartCirclingWolves()
 	}
 	UpdateRot += RotSpeed * GetWorld()->DeltaTimeSeconds;
 
-	ACharacter* MyPlayer = UGameplayStatics::GetPlayerCharacter(this, 0);
-	if (MyPlayer)
+	//ACharacter* MyPlayer = UGameplayStatics::GetPlayerCharacter(this, 0);
+	if (OwnerPawn)
 	{
 		// 늑대 위치 지정
-		const FVector PlayerLoc = MyPlayer->GetActorLocation();
+		const FVector PlayerLoc = OwnerPawn->GetActorLocation();
 		const FVector InitLocation = RotateActorPoint(PlayerLoc, Radius, StartAngle, UpdateRot);
 		SetActorLocation(InitLocation);
 
@@ -191,6 +194,8 @@ void AShinbiWolf::StartUltimate()
 
 void AShinbiWolf::StopUltimate()
 {
+	SpawnParticle(UltEndFX);
+
 	GetCharacterMovement()->GravityScale = 1.0f;
 	bIsSpawn = false;
 	SetDisable();
@@ -244,11 +249,7 @@ void AShinbiWolf::BeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor
 		else if (CurrentState == EWolfState::Ultimate)
 		{
 			// 충돌 알림
-			ACharacter* MyPlayer = UGameplayStatics::GetPlayerCharacter(this, 0);
-			AShinbi* Shinbi = Cast<AShinbi>(MyPlayer);
-			Shinbi->UltimateHitNotify();
-
-			SpawnParticle(UltEndFX);
+			OwnerPawn->UltimateHitNotify();
 			StopUltimate();
 		}
 	}

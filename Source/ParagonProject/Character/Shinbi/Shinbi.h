@@ -100,7 +100,7 @@ private:
 	void StopAttackCast();
 
 	// Circling Wolves 스킬 사용시 생성된 늑대 인덱스들
-	TSet<int> CirclingIndexes;
+	TSet<AShinbiWolf*> CirclingWolfSet;
 
 	// Circle Wolves 스킬 중단 타이머핸들
 	FTimerHandle CircleWolvesTimer;
@@ -143,7 +143,7 @@ private:
 	int WolfIndex;
 
 	// 늑대 활성화 함수
-	TSet<int> ActiveWolves(const FVector SpawnVec, const FRotator SpawnRot, int SpawnNum = 1);
+	TSet<AShinbiWolf*> ActiveWolves(const FVector SpawnVec, const FRotator SpawnRot, int SpawnNum = 1);
 
 	// 게임 시작시 늑대 생성
 	void CreateWolves();
