@@ -20,9 +20,9 @@ public:
 
 	void Init();
 
-	void SetPrimaryImage(UTexture2D* Image, const EAbilityType Type);
+	void SetImage(UTexture2D* Image, const EAbilityType Type);
 
-protected:
+private:
 	UPROPERTY()
 	class UImage * PrimaryImg;
 

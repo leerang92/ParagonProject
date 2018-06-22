@@ -9,6 +9,7 @@
 #include "Runtime/Engine/Classes/Engine/World.h"
 #include "Runtime/Engine/Classes/Particles/ParticleSystemComponent.h"
 #include "Character/AbilityComponent.h"
+#include "UI/MainUMG.h"
 #include "BaseCharacter.generated.h"
 
 UCLASS()
@@ -106,6 +107,16 @@ protected:
 	virtual void Ability1();
 	virtual void Ability2();
 	virtual void Ultimate();
+
+public:
+	UPROPERTY(EditDefaultsOnly, Category = "UMG")
+	TSubclassOf<UMainUMG> MainUMGClass;
+
+private:
+	UPROPERTY()
+	class UMainUMG* MainUMG;
+
+	void SetAbilityBar();
 
 protected:
 	inline const UCameraComponent * GetCameraComponent()

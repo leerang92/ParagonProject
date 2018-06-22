@@ -28,6 +28,8 @@ protected:
 public:	
 	void UseAbility(const EAbilityType Type);
 
+	FAbilityInfo GetAbilityInfo(int Index) const;
+
 private:
 	void SetPrimary();
 
@@ -43,4 +45,5 @@ private:
 	FAbilityInfo AbilityInfo[5];
 
 	class UUIAbilityBar* AbilityBar;
+
 };

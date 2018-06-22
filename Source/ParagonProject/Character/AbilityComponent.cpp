@@ -22,16 +22,16 @@ void UAbilityComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	UUserWidget* NewWidget = CreateWidget<UUserWidget>(GetWorld(), AbilityBarClass);
-	NewWidget->AddToViewport();
-	AbilityBar = Cast<UUIAbilityBar>(NewWidget);
+	//UUserWidget* NewWidget = CreateWidget<UUserWidget>(GetWorld(), AbilityBarClass);
+	//NewWidget->AddToViewport();
+	//AbilityBar = Cast<UUIAbilityBar>(NewWidget);
 
-	uint8 index = 0;
-	for (auto& arr : AbilityInfo)
-	{
-		AbilityBar->SetPrimaryImage(arr.Image, static_cast<EAbilityType>(index));
-		++index;
-	}
+	//uint8 index = 0;
+	//for (auto& arr : AbilityInfo)
+	//{
+	//	AbilityBar->SetPrimaryImage(arr.Image, static_cast<EAbilityType>(index));
+	//	++index;
+	//}
 }
 
 void UAbilityComponent::UseAbility(const EAbilityType Type)
@@ -49,6 +49,11 @@ void UAbilityComponent::UseAbility(const EAbilityType Type)
 	case EAbilityType::Ultimate:
 		break;
 	}
+}
+
+FAbilityInfo UAbilityComponent::GetAbilityInfo(int Index) const
+{
+	return AbilityInfo[Index];
 }
 
 void UAbilityComponent::SetPrimary()

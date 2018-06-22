@@ -192,6 +192,7 @@ void AShinbi::UltimateHitNotify()
 		UltHitCount = 0;
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), UltFinalFX, TargetPawn->GetActorTransform());
 		GetWorldTimerManager().SetTimer(UltShakeTimer, this, &AShinbi::CameraShake, 0.7f, false);
+		TargetPawn = nullptr;
 	}
 }
 

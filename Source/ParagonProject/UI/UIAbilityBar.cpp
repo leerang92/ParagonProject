@@ -4,7 +4,7 @@
 #include "Runtime/UMG/Public/Components/Button.h"
 #include "Runtime/UMG/Public/Components/Image.h"
 
-void UUIAbilityBar::SetPrimaryImage(UTexture2D * Image, const EAbilityType Type)
+void UUIAbilityBar::SetImage(UTexture2D * Image, const EAbilityType Type)
 {
 	UImage* SetImage = nullptr;
 

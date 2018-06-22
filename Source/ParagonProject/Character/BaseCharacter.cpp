@@ -59,6 +59,13 @@ void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if (MainUMGClass != nullptr)
+	{
+		MainUMG = CreateWidget<UMainUMG>(GetWorld(), MainUMGClass);
+		MainUMG->AddToViewport();
+		
+		SetAbilityBar();
+	}
 }
 
 // Called every frame
@@ -191,10 +198,22 @@ void ABaseCharacter::UseAbility()
 	(this->*(AbilityFuncs[T]))();
 }
 
+void ABaseCharacter::SetAbilityBar()
+{
+	uint8 Index = 0;
+	for (int i = 0; i < 5; ++i)
+	{
+		FAbilityInfo Info = AbilityComp->GetAbilityInfo(i);
+		MainUMG->GetAbilityBar()->SetImage(Info.Image, static_cast<EAbilityType>(i));
+	}
+	
+}
+
 /* 스킬 함수들 */
 void ABaseCharacter::Ultimate()
 {
 }
+
 void ABaseCharacter::Ability1()
 {
 }
