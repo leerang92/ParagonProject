@@ -21,17 +21,6 @@ void UAbilityComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-	//UUserWidget* NewWidget = CreateWidget<UUserWidget>(GetWorld(), AbilityBarClass);
-	//NewWidget->AddToViewport();
-	//AbilityBar = Cast<UUIAbilityBar>(NewWidget);
-
-	//uint8 index = 0;
-	//for (auto& arr : AbilityInfo)
-	//{
-	//	AbilityBar->SetPrimaryImage(arr.Image, static_cast<EAbilityType>(index));
-	//	++index;
-	//}
 }
 
 void UAbilityComponent::UseAbility(const EAbilityType Type)

@@ -18,9 +18,6 @@ public:
 	// Sets default values for this component's properties
 	UAbilityComponent();
 
-	UPROPERTY(EditAnywhere, Category = "UMG")
-	TSubclassOf<class UUIAbilityBar> AbilityBarClass;
-
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -43,7 +40,4 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Ability", meta = (AllowedPrivateAccess = true))
 	FAbilityInfo AbilityInfo[5];
-
-	class UUIAbilityBar* AbilityBar;
-
 };

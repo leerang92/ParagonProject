@@ -76,13 +76,9 @@ public:
 	UAnimMontage* LeapMontage;
 
 public:
-	// 액터 활성화
-	UFUNCTION(BlueprintCallable, Category = "Wolves")
-	void SetEnable();
-	
-	// 액터 비활성화
-	UFUNCTION(BlueprintCallable, Category = "Wolves")
-	void SetDisable();
+
+	// Attack Wolves 스킬 종료
+	void StopAttackWolves();
 
 	// 늑대 각도 변수 설정
 	void SetCirclingAngle(float NewAngle);
@@ -115,19 +111,11 @@ private:
 	// Attack Wolves 스킬 시작
 	void StartAttackWolves();
 
-	// Attack Wolves 스킬 종료
-	void StopAttackWolves();
-
 	// Attack Wolves 스킬 사용 여부
 	bool IsAttackWolves : 1;
 
-	// Attack Wolves 종료 타이머 핸들
-	FTimerHandle AttackWolvesTimer;
-
 	/* Circling Wolves */
 	void StartCirclingWolves();
-
-	FTimerHandle CirRemoveTimer;
 
 	// 타겟으로부터 회전할 포인트 반환 함수
 	FVector RotateActorPoint(FVector TargetLocation, const float Radius, const float  Angle, const float RotationRate);

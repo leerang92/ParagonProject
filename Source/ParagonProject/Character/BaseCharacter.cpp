@@ -200,26 +200,29 @@ void ABaseCharacter::UseAbility()
 
 void ABaseCharacter::SetAbilityBar()
 {
+	// 스킬 아이콘 설정
 	uint8 Index = 0;
 	for (int i = 0; i < 5; ++i)
 	{
 		FAbilityInfo Info = AbilityComp->GetAbilityInfo(i);
-		MainUMG->GetAbilityBar()->SetImage(Info.Image, static_cast<EAbilityType>(i));
+		MainUMG->GetAbilityBar()->SetImage(Info.Image, i);
 	}
-	
 }
 
 /* 스킬 함수들 */
 void ABaseCharacter::Ultimate()
 {
+	MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::Ultimate)));
 }
-
 void ABaseCharacter::Ability1()
 {
+	MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::Ability1)));
 }
 void ABaseCharacter::Ability2()
 {
+	MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::Ability2)));
 }
 void ABaseCharacter::AbilityMouseR()
 {
+	MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::MouseR)));
 }

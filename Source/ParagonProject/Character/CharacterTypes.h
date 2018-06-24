@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "Runtime/Engine/Classes/Engine/Texture.h"
 #include "CharacterTypes.generated.h"
 
 UENUM(BlueprintType)
@@ -22,14 +23,26 @@ struct FAbilityInfo
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, Category = "Ability")
-	UTexture2D* Image;
+	UTexture* Image;
 
 	UPROPERTY(EditAnywhere, Category = "Ability")
-		FName Name;
+	FName Name;
 
 	UPROPERTY(EditAnywhere, Category = "Ability")
-		float CoolDown;
+	float CoolDown;
 
 	UPROPERTY(EditAnywhere, Category = "Ability")
-		float Damage;
+	float Damage;
+
+	UPROPERTY(EditAnywhere, Category = "Ability")
+	EAbilityType Type;
+
+	UPROPERTY(EditAnywhere, Category = "Ability")
+	int UsageCountMax;
+
+	FAbilityInfo() :
+		Image(nullptr),
+		Name(TEXT("Ability Name")),
+		UsageCountMax(1)
+	{}
 };

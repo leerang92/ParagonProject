@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/BaseCharacter.h"
+#include "Character/ObjectPoolComponent.h"
 #include "Shinbi.generated.h"
 
 /**
@@ -20,8 +21,11 @@ private:
 	virtual void BeginPlay() override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
+
 public:
+	UPROPERTY(EditAnywhere, Category = "ObjectPool")
+	class UObjectPoolComponent* ObjPoolComp;
+
 	// 생성할 울프 객체 클래스
 	UPROPERTY(EditDefaultsOnly, Category = "Wolf")
 	TSubclassOf<class AShinbiWolf> WolfClass;
@@ -33,6 +37,9 @@ public:
 	// Dash 스킬 나아갈 크기 변수
 	UPROPERTY(EditAnywhere, Category = "Ability")
 	float DashPower;
+
+	UPROPERTY(EditAnywhere, Category = "Ability")
+	float AttackWolvesDuration;
 
 	// CirclingWolves(Abiility2) 지속 시간 변수
 	UPROPERTY(EditAnywhere, Category = "Ability")
@@ -96,8 +103,12 @@ protected:
 	virtual void AbilityMouseR() override;
 
 private:
+	FTimerHandle AttackWolvesTimer;
+
 	// Attack Wolves 스킬 캐스트 중단 및 늑대 소환
 	void StopAttackCast();
+
+	void StopAttackWolves(AShinbiWolf* Wolf);
 
 	// Circling Wolves 스킬 사용시 생성된 늑대 인덱스들
 	TSet<AShinbiWolf*> CirclingWolfSet;
@@ -136,17 +147,5 @@ private:
 	UParticleSystemComponent* MarkerFX;
 
 private:
-	UPROPERTY(Transient)
-	TArray<class AShinbiWolf*> Wolves;
-
-	// 현재 늑대 배열의 인덱스
-	int WolfIndex;
-
-	// 늑대 활성화 함수
-	TSet<AShinbiWolf*> ActiveWolves(const FVector SpawnVec, const FRotator SpawnRot, int SpawnNum = 1);
-
-	// 게임 시작시 늑대 생성
-	void CreateWolves();
-
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 };

@@ -61,14 +61,9 @@ void AShinbiWolf::Action(const EWolfState NewState)
 	{
 	case EWolfState::Attack:
 		UpdateFunc = &AShinbiWolf::StartAttackWolves;
-		GetWorldTimerManager().SetTimer(AttackWolvesTimer, this, &AShinbiWolf::StopAttackWolves, AttackWolvesDuration, false);
 		break;
 	case EWolfState::Circle:
 		UpdateFunc = &AShinbiWolf::StartCirclingWolves;
-		GetWorldTimerManager().SetTimer(CirRemoveTimer, this, &AShinbiWolf::StopCirclingWolves, CirclWolvesDuration, false);
-		break;
-	case EWolfState::Ultimate:
-		//SetupUltimate();
 		break;
 	}
 }
@@ -85,17 +80,6 @@ void AShinbiWolf::SpawnParticle(UParticleSystem * NewFX)
 		return;
 	}
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), NewFX, GetActorTransform());
-}
-
-void AShinbiWolf::SetEnable()
-{
-	SetActorHiddenInGame(false);
-}
-
-void AShinbiWolf::SetDisable()
-{
-	Action(EWolfState::Idle);
-	SetActorHiddenInGame(true);
 }
 
 void AShinbiWolf::SetIsSpawn(bool bSpawn)
@@ -119,7 +103,6 @@ void AShinbiWolf::StopAttackWolves()
 {
 	// 파티클이 있고 액터가 숨겨지지 않았다면
 	SpawnParticle(AttackWolvesEndFX);
-	SetDisable();
 }
 
 void AShinbiWolf::StartCirclingWolves()
@@ -130,7 +113,7 @@ void AShinbiWolf::StartCirclingWolves()
 	}
 	UpdateRot += RotSpeed * GetWorld()->DeltaTimeSeconds;
 
-	//ACharacter* MyPlayer = UGameplayStatics::GetPlayerCharacter(this, 0);
+	ACharacter* OwnerPawn = UGameplayStatics::GetPlayerCharacter(this, 0);
 	if (OwnerPawn)
 	{
 		// 늑대 위치 지정
@@ -149,7 +132,6 @@ void AShinbiWolf::StartCirclingWolves()
 void AShinbiWolf::StopCirclingWolves()
 {
 	SpawnParticle(CirclingRemovalFX);
-	SetDisable();
 }
 
 FVector AShinbiWolf::RotateActorPoint(FVector TargetLocation, const float Radius, const float Angle, const float RotationRate)
@@ -184,9 +166,12 @@ void AShinbiWolf::StartUltimate()
 	// 타겟 방향으로 파티클 생성
 	const FRotator FocusRot = LookAtTarget(GetActorLocation(), TargetPawn->GetActorLocation());
 	FTransform ParticleTr = FTransform(FocusRot + FRotator(40.0f, 0, 0), GetActorLocation());
+
+	// 하트 이펙트 생성
 	UParticleSystemComponent* FXComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), UltHeartFX, ParticleTr);
 	FXComp->CustomTimeDilation = 1.5f;
 
+	// 애니메이션 재생 및 Update함수 설정
 	PlayAnimMontage(LeapMontage);
 	GetMesh()->SetHiddenInGame(false);
 	UpdateFunc = &AShinbiWolf::UpdateUltimate;
@@ -198,15 +183,14 @@ void AShinbiWolf::StopUltimate()
 
 	GetCharacterMovement()->GravityScale = 1.0f;
 	bIsSpawn = false;
-	SetDisable();
 }
 
 void AShinbiWolf::SetupUltimate(APawn* Target, const FVector NewLocation, float InRate)
 {
+	SetActorLocation(NewLocation);
 	GetMesh()->SetHiddenInGame(true);
 	GetCharacterMovement()->GravityScale = 0.0f;
 	TargetPawn = Target;
-	SetActorLocation(NewLocation);
 
 	// Eye 파티클 생성
 	if (TargetPawn != nullptr)
@@ -233,14 +217,15 @@ void AShinbiWolf::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void AShinbiWolf::BeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	
 	if (OtherActor != nullptr && OtherActor != this && OtherComp != nullptr &&
 		OtherActor->GetClass() != this->GetClass())
 	{
-		if (CurrentState == EWolfState::Attack)
+		ACharacter* OwnerPawn = UGameplayStatics::GetPlayerCharacter(this, 0);
+		if (CurrentState == EWolfState::Attack && OtherActor != OwnerPawn)
 		{
 			SpawnParticle(AttackWolvesImpactFX);
-			SetDisable();
+			AShinbi* Player = Cast<AShinbi>(OwnerPawn);
+			Player->ObjPoolComp->SetDisable(this);
 		}
 		else if (CurrentState == EWolfState::Circle)
 		{
@@ -248,9 +233,12 @@ void AShinbiWolf::BeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor
 		}
 		else if (CurrentState == EWolfState::Ultimate)
 		{
-			// 충돌 알림
-			OwnerPawn->UltimateHitNotify();
 			StopUltimate();
+			// 충돌 알림
+			AShinbi* Player = Cast<AShinbi>(OwnerPawn);
+			Player->UltimateHitNotify();
+			
+			Player->ObjPoolComp->SetDisable(this);
 		}
 	}
 }

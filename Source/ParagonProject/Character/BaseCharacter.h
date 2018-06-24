@@ -112,7 +112,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "UMG")
 	TSubclassOf<UMainUMG> MainUMGClass;
 
-private:
+protected:
 	UPROPERTY()
 	class UMainUMG* MainUMG;
 
