@@ -55,18 +55,6 @@ public:
 
 };
 
-inline void UObjectPoolComponent::CreateObject(UWorld * World, UClass * Class, const FVector & Location, const FRotator & Rotator, const int SpawnNum)
-{
-	for (int i = 0; i < SpawnNum; ++i)
-	{
-		FObjectInfo Info;
-		Info.Actor = World->SpawnActor<AActor>(Class, Location, Rotator);
-		Info.Actor->SetActorHiddenInGame(true);
-		
-		Objects.Add(Info);
-	}
-}
-
 template<class T>
 inline T* UObjectPoolComponent::ActiveObject()
 {
@@ -80,5 +68,7 @@ inline T* UObjectPoolComponent::ActiveObject()
 			return Cast<T>(obj.Actor);
 		}
 	}
-	return nullptr;
+	// 반환할 객체가 없을 시, 추가 생성 후 반환
+	CreateObject(GetWorld(), Objects[0].Actor->GetClass(), FVector::ZeroVector, FRotator::ZeroRotator, 10);
+	return ActiveObject<T>();
 }

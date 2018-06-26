@@ -25,6 +25,18 @@ void UObjectPoolComponent::BeginPlay()
 	
 }
 
+void UObjectPoolComponent::CreateObject(UWorld * World, UClass * Class, const FVector & Location, const FRotator & Rotator, const int SpawnNum)
+{
+	for (int i = 0; i < SpawnNum; ++i)
+	{
+		FObjectInfo Info;
+		Info.Actor = World->SpawnActor<AActor>(Class, Location, Rotator);
+		Info.Actor->SetActorHiddenInGame(true);
+
+		Objects.Add(Info);
+	}
+}
+
 void UObjectPoolComponent::SetDisable(const AActor * Actor)
 {
 	for (auto& obj : Objects)

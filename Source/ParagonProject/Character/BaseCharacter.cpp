@@ -1,10 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "BaseCharacter.h"
-#include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
-#include "DrawDebugHelpers.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -212,17 +209,29 @@ void ABaseCharacter::SetAbilityBar()
 /* 스킬 함수들 */
 void ABaseCharacter::Ultimate()
 {
-	MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::Ultimate)));
+	if (MainUMG)
+	{
+		MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::Ultimate)));
+	}
 }
 void ABaseCharacter::Ability1()
 {
-	MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::Ability1)));
+	if (MainUMG)
+	{
+		MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::Ability1)));
+	}
 }
 void ABaseCharacter::Ability2()
 {
-	MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::Ability2)));
+	if (MainUMG)
+	{
+		MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::Ability2)));
+	}
 }
 void ABaseCharacter::AbilityMouseR()
 {
-	MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::MouseR)));
+	if (MainUMG)
+	{
+		MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::MouseR)));
+	}
 }
