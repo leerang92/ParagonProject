@@ -2,7 +2,6 @@
 
 #include "Shinbi.h"
 #include "ShinbiWolf.h"
-#include "Runtime/Engine/Public/TimerManager.h"
 #include "Camera/CameraComponent.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 
@@ -47,9 +46,9 @@ void AShinbi::SetupPlayerInputComponent(UInputComponent * PlayerInputComponent)
 void AShinbi::StartAttack()
 {
 	// 공격중이 아닐 시
-	if (!IsAttacking)
+	if (!bAttacking)
 	{
-		IsAttacking = true;
+		bAttacking = true;
 		SaveCombo = true;
 		ComboAttack();
 	}

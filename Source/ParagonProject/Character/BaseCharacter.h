@@ -6,10 +6,12 @@
 #include "GameFramework/Character.h"
 #include "Components/InputComponent.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Runtime/Engine/Classes/Engine/World.h"
 #include "Runtime/Engine/Classes/Particles/ParticleSystemComponent.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
+#include "Runtime/Engine/Classes/Engine/World.h"
+#include "Runtime/Engine/Public/TimerManager.h"
 #include "Character/AbilityComponent.h"
 #include "UI/MainUMG.h"
 #include "BaseCharacter.generated.h"
@@ -85,7 +87,7 @@ public:
 
 protected:
 	/* АјАн */
-	bool IsAttacking : 1;
+	bool bAttacking : 1;
 
 	int AttackCount;
 
@@ -111,6 +113,13 @@ protected:
 	virtual void Ultimate();
 
 public:
+	inline const UCameraComponent * GetCameraComponent()
+	{
+		return CameraComp;
+	}
+
+	/* UI */
+public:
 	UPROPERTY(EditDefaultsOnly, Category = "UMG")
 	TSubclassOf<UMainUMG> MainUMGClass;
 
@@ -119,10 +128,4 @@ protected:
 	class UMainUMG* MainUMG;
 
 	void SetAbilityBar();
-
-protected:
-	inline const UCameraComponent * GetCameraComponent()
-	{
-		return CameraComp;
-	}
 };

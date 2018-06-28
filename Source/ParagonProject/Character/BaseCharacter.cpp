@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "BaseCharacter.h"
-#include "GameFramework/SpringArmComponent.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -31,12 +30,12 @@ ABaseCharacter::ABaseCharacter()
 	CameraArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera Arm"));
 	CameraArm->SetupAttachment(RootComponent);
 	CameraArm->TargetArmLength = 450.0f;
-	CameraArm->bUsePawnControlRotation = false;
+	CameraArm->bUsePawnControlRotation = true;
 
 	/* 카메라 컴포넌트 */
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera Comp"));
 	CameraComp->SetupAttachment(CameraArm, USpringArmComponent::SocketName);
-	CameraComp->bUsePawnControlRotation = true;
+	CameraComp->bUsePawnControlRotation = false;
 
 	/* 캐릭터 무브먼트 컴포넌트 */
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -166,12 +165,26 @@ void ABaseCharacter::SetCameraParticle(UParticleSystem * NewParticle)
 
 void ABaseCharacter::StartAttack()
 {
-
+	// 공격중이 아닐 시
+	if (!bAttacking)
+	{
+		bAttacking = true;
+		SaveCombo = true;
+		ComboAttack();
+	}
+	// 이미 공격중일 시 콤보 이어하기
+	else if (!SaveCombo)
+	{
+		SaveCombo = true;
+	}
 }
 
 void ABaseCharacter::ComboAttack()
 {
-
+	if (MainUMG)
+	{
+		MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::Primary)));
+	}
 }
 
 void ABaseCharacter::StopAttack()
@@ -183,7 +196,7 @@ void ABaseCharacter::StopAttack()
 void ABaseCharacter::ResetComboAttack()
 {
 	SaveCombo = true;
-	IsAttacking = false;
+	bAttacking = false;
 	AttackCount = 0;
 }
 

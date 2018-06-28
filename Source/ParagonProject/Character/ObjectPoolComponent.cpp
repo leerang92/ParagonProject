@@ -12,6 +12,8 @@ UObjectPoolComponent::UObjectPoolComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 
 	// ...
+	Index = 0;
+	MaxObjNum = 0;
 }
 
 
@@ -27,10 +29,12 @@ void UObjectPoolComponent::BeginPlay()
 
 void UObjectPoolComponent::CreateObject(UWorld * World, UClass * Class, const FVector & Location, const FRotator & Rotator, const int SpawnNum)
 {
-	for (int i = 0; i < SpawnNum; ++i)
+	MaxObjNum = SpawnNum;
+	for (int i = 0; i < MaxObjNum; ++i)
 	{
 		FObjectInfo Info;
 		Info.Actor = World->SpawnActor<AActor>(Class, Location, Rotator);
+		Info.Actor->SetFolderPath("Character ObjectPool");
 		Info.Actor->SetActorHiddenInGame(true);
 
 		Objects.Add(Info);

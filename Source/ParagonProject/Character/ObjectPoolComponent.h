@@ -53,22 +53,35 @@ public:
 	template<class T>
 	T* ActiveObject();
 
+	int Index;
+
+	int MaxObjNum;
 };
 
 template<class T>
 inline T* UObjectPoolComponent::ActiveObject()
 {
-	// 오브젝트가 비활성화이면 활성화 후 캐스팅하여 반환
-	for (auto& obj : Objects)
+	for (; ; ++Index %= MaxObjNum)
 	{
-		if (obj.bHidden)
-		{	
-			obj.bHidden = false;
-			obj.Actor->SetActorHiddenInGame(false);
-			return Cast<T>(obj.Actor);
+		if (Objects[Index].bHidden)
+		{
+			Objects[Index].bHidden = false;
+			Objects[Index].Actor->SetActorHiddenInGame(false);
+			return Cast<T>(Objects[Index].Actor);
 		}
 	}
-	// 반환할 객체가 없을 시, 추가 생성 후 반환
-	CreateObject(GetWorld(), Objects[0].Actor->GetClass(), FVector::ZeroVector, FRotator::ZeroRotator, 10);
-	return ActiveObject<T>();
+	// 오브젝트가 비활성화이면 활성화 후 캐스팅하여 반환
+	//for (auto& obj : Objects)
+	//{
+	//	if (obj.bHidden)
+	//	{	
+	//		obj.bHidden = false;
+	//		obj.Actor->SetActorHiddenInGame(false);
+	//		return Cast<T>(obj.Actor);
+	//	}
+	//}
+	//UE_LOG(LogClass, Warning, TEXT("Object"));
+	//// 반환할 객체가 없을 시, 추가 생성 후 반환
+	//CreateObject(GetWorld(), Objects[0].Actor->GetClass(), FVector::ZeroVector, FRotator::ZeroRotator, 10);
+	//return ActiveObject<T>();
 }
