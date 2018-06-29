@@ -40,10 +40,10 @@ void AShinbi::SetupPlayerInputComponent(UInputComponent * PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	PlayerInputComponent->BindAction("AbilityMouseR", IE_Released, this, &AShinbi::StopAttackCast);
+	PlayerInputComponent->BindAction("AbilityMR", IE_Released, this, &AShinbi::StopAttackCast);
 }
 
-void AShinbi::StartAttack()
+void AShinbi::StartPrimary()
 {
 	// 공격중이 아닐 시
 	if (!bAttacking)
@@ -75,7 +75,7 @@ void AShinbi::ComboAttack()
 }
 
 // Attack Wolves 스킬
-void AShinbi::AbilityMouseR()
+void AShinbi::AbilityMR()
 {
 	// Attack Wolves 스킬 애니메이션 몽타주 실행
 	PlayAnimMontage(AttackWolvesMontage);
@@ -107,11 +107,11 @@ void AShinbi::StopAttackWolves(AShinbiWolf* Wolf)
 }
 
 // Dash
-void AShinbi::Ability1()
+void AShinbi::AbilityQ()
 {
 	if (!GetCharacterMovement()->IsFalling())
 	{
-		Super::Ability1();
+		Super::AbilityQ();
 
 		PlayAnimMontage(DashMontage, 2.0f);
 		SetCameraParticle(DashParticle); // 카메라에 대쉬 이펙트 실행
@@ -122,14 +122,14 @@ void AShinbi::Ability1()
 }
 
 // Circling Wolves 스킬
-void AShinbi::Ability2()
+void AShinbi::AbilityE()
 {
 	if (bIsCircling)
 	{
 		return;
 	}
 
-	Super::Ability2();
+	Super::AbilityE();
 
 	// 플레이어 CircleWovles 애니메이션 실행
 	PlayAnimMontage(CircleWolvesMontage);

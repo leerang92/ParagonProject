@@ -90,7 +90,7 @@ public:
 
 protected:
 	/* Attack */
-	virtual void StartAttack() override;
+	virtual void StartPrimary() override;
 
 	virtual void ComboAttack() override;
 
@@ -98,9 +98,9 @@ protected:
 
 	/* Ability */
 	virtual void Ultimate() override;
-	virtual void Ability1() override;
-	virtual void Ability2() override;
-	virtual void AbilityMouseR() override;
+	virtual void AbilityQ() override;
+	virtual void AbilityE() override;
+	virtual void AbilityMR() override;
 
 private:
 	FTimerHandle AttackWolvesTimer;

@@ -13,9 +13,9 @@ ABaseCharacter::ABaseCharacter()
 	SaveCombo = true;
 
 	// 스킬 함수들 함수 포인터 배열에 바인드
-	AbilityFuncs.Add(&ABaseCharacter::AbilityMouseR);
-	AbilityFuncs.Add(&ABaseCharacter::Ability1);
-	AbilityFuncs.Add(&ABaseCharacter::Ability2);
+	AbilityFuncs.Add(&ABaseCharacter::AbilityMR);
+	AbilityFuncs.Add(&ABaseCharacter::AbilityQ);
+	AbilityFuncs.Add(&ABaseCharacter::AbilityE);
 	AbilityFuncs.Add(&ABaseCharacter::Ultimate);
 		
 	BaseTurnRate = 45.0f;
@@ -88,14 +88,12 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ABaseCharacter::LookUpAtRate);
 
-	/* 공격 */
-	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &ABaseCharacter::StartAttack);
-	PlayerInputComponent->BindAction("Attack", IE_Released, this, &ABaseCharacter::StopAttack);
-
 	/* 스킬 */
-	PlayerInputComponent->BindAction("AbilityMouseR", IE_Pressed, this, &ABaseCharacter::UseAbility<0>);
-	PlayerInputComponent->BindAction("Ability1", IE_Pressed, this, &ABaseCharacter::UseAbility<1>);
-	PlayerInputComponent->BindAction("Ability2", IE_Pressed, this, &ABaseCharacter::UseAbility<2>);
+	PlayerInputComponent->BindAction("Primary", IE_Pressed, this, &ABaseCharacter::StartPrimary);
+	PlayerInputComponent->BindAction("Primary", IE_Released, this, &ABaseCharacter::StopPrimary);
+	PlayerInputComponent->BindAction("AbilityMR", IE_Pressed, this, &ABaseCharacter::UseAbility<0>);
+	PlayerInputComponent->BindAction("AbilityQ", IE_Pressed, this, &ABaseCharacter::UseAbility<1>);
+	PlayerInputComponent->BindAction("AbilityE", IE_Pressed, this, &ABaseCharacter::UseAbility<2>);
 	PlayerInputComponent->BindAction("Ultimate", IE_Pressed, this, &ABaseCharacter::UseAbility<3>);
 }
 
@@ -163,7 +161,7 @@ void ABaseCharacter::SetCameraParticle(UParticleSystem * NewParticle)
 	}
 }
 
-void ABaseCharacter::StartAttack()
+void ABaseCharacter::StartPrimary()
 {
 	// 공격중이 아닐 시
 	if (!bAttacking)
@@ -187,7 +185,7 @@ void ABaseCharacter::ComboAttack()
 	}
 }
 
-void ABaseCharacter::StopAttack()
+void ABaseCharacter::StopPrimary()
 {
 	SaveCombo = false;
 }
@@ -204,7 +202,7 @@ template<int T>
 void ABaseCharacter::UseAbility()
 {
 	ResetComboAttack();
-	StopAttack();
+	StopPrimary();
 	(this->*(AbilityFuncs[T]))();
 }
 
@@ -227,21 +225,21 @@ void ABaseCharacter::Ultimate()
 		MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::Ultimate)));
 	}
 }
-void ABaseCharacter::Ability1()
+void ABaseCharacter::AbilityQ()
 {
 	if (MainUMG)
 	{
-		MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::Ability1)));
+		MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::AbilityQ)));
 	}
 }
-void ABaseCharacter::Ability2()
+void ABaseCharacter::AbilityE()
 {
 	if (MainUMG)
 	{
-		MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::Ability2)));
+		MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::AbilityE)));
 	}
 }
-void ABaseCharacter::AbilityMouseR()
+void ABaseCharacter::AbilityMR()
 {
 	if (MainUMG)
 	{

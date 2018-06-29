@@ -91,9 +91,11 @@ protected:
 
 	int AttackCount;
 
-	virtual void StartAttack();
+	// 주 공격 시작
+	virtual void StartPrimary();
 
-	virtual void StopAttack();
+	// 다음 콤보 어택 중단
+	virtual void StopPrimary();
 
 	// 현재 콤보 공격 초기화
 	UFUNCTION(BlueprintCallable, Category = "Attack", meta = (AllowedPrivateAccess = true))
@@ -107,9 +109,9 @@ protected:
 	typedef void(ABaseCharacter::*AbilityFp)();
     TArray<AbilityFp> AbilityFuncs;
 
-	virtual void AbilityMouseR();
-	virtual void Ability1();
-	virtual void Ability2();
+	virtual void AbilityMR();
+	virtual void AbilityQ();
+	virtual void AbilityE();
 	virtual void Ultimate();
 
 public:

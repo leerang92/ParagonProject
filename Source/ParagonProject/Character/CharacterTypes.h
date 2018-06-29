@@ -12,9 +12,10 @@ enum class EAbilityType : uint8
 {
 	Primary,
 	MouseR,
-	Ability1,
-	Ability2,
+	AbilityQ,
+	AbilityE,
 	Ultimate,
+	None,
 };
 
 USTRUCT(BlueprintType)

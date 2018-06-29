@@ -31,9 +31,9 @@ void UAbilityComponent::UseAbility(const EAbilityType Type)
 		break;
 	case EAbilityType::MouseR:
 		break;
-	case EAbilityType::Ability1:
+	case EAbilityType::AbilityQ:
 		break;
-	case EAbilityType::Ability2:
+	case EAbilityType::AbilityE:
 		break;
 	case EAbilityType::Ultimate:
 		break;
