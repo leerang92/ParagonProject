@@ -19,6 +19,10 @@ public:
 
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
+	virtual void BeginPlay() override;
+
+	virtual void Tick(float DeltaTime) override;
+
 protected:
 	virtual void StartPrimary() override;
 
@@ -36,6 +40,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	class UAnimMontage* FuryAnim;
 
+	UFUNCTION(BlueprintCallable, Category = "Serath")
+	void SetFly(bool bIsFly);
+
+	UPROPERTY(EditAnywhere, Category = "Speed")
+	float FlySpeed;
+
+	UPROPERTY(EditAnywhere)
+	class UMaterial* Decal;
+
 private:
 	EAbilityType CurrentAbility;
 
@@ -46,11 +59,28 @@ private:
 
 	bool bAbilityFury : 1;
 
+	bool bFly : 1;
+
 	virtual void AbilityMR() override;
 
 	virtual void AbilityQ() override;
 
 	virtual void AbilityE() override;
+
+	void SetHeavenFury();
+
+	FVector FlyTargetVec;
+
+	float GetTraceHitDistance(const FVector& NewPos, const FVector& NewDir);
+
+	FVector GetMouseWorldPosition();
+
+	UPROPERTY()
+	class UDecalComponent* DecalComp;
+
+	UPROPERTY()
+	class APlayerController* CharCon;
+
 public:
 	UFUNCTION(BlueprintCallable, Category = "Character")
 	FORCEINLINE EAbilityType GetCurrentAbility() const { return CurrentAbility; }
