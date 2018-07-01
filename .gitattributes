@@ -8,3 +8,5 @@ EpickQuadPanorama_CC.uasset filter=lfs diff=lfs merge=lfs -text
 EpicQuadPanorama_CC.uasset filter=lfs diff=lfs merge=lfs -text
 T_TreeBark_D.uasset filter=lfs diff=lfs merge=lfs -text
 T_TreeBark_N.uasset filter=lfs diff=lfs merge=lfs -text
+T_RevaCliff_N.uasset filter=lfs diff=lfs merge=lfs -text
+T_RevaCliff_D.uasset filter=lfs diff=lfs merge=lfs -text
