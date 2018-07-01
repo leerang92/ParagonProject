@@ -5,3 +5,6 @@ EpickQuadPanorama_CC.uasset filter=lfs diff=lfs merge=lfs -text
 *.ogg filter=lfs diff=lfs merge=lfs -text
 *.move filter=lfs diff=lfs merge=lfs -text
 *.mov filter=lfs diff=lfs merge=lfs -text
+EpicQuadPanorama_CC.uasset filter=lfs diff=lfs merge=lfs -text
+T_TreeBark_D.uasset filter=lfs diff=lfs merge=lfs -text
+T_TreeBark_N.uasset filter=lfs diff=lfs merge=lfs -text
