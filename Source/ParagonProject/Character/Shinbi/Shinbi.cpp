@@ -8,6 +8,7 @@
 AShinbi::AShinbi()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	CurrentAbility = EAbilityType::None;
 
 	/* 늑대 오브젝트 풀 */
 	MaxWolfNum = 20;
@@ -24,8 +25,11 @@ AShinbi::AShinbi()
 	UltimateSpawnTime = 0.5f;
 	UltHitCount = 0;
 
-	ObjPoolComp = CreateDefaultSubobject<UObjectPoolComponent>(TEXT("Object Pool Component"));
+	PrimarySectionNames.Add(TEXT("Primary_B"));
+	PrimarySectionNames.Add(TEXT("Primary_C"));
+	PrimarySectionNames.Add(TEXT("Primary_D"));
 
+	ObjPoolComp = CreateDefaultSubobject<UObjectPoolComponent>(TEXT("Object Pool Component"));
 }
 
 void AShinbi::BeginPlay()
@@ -43,33 +47,33 @@ void AShinbi::SetupPlayerInputComponent(UInputComponent * PlayerInputComponent)
 	PlayerInputComponent->BindAction("AbilityMR", IE_Released, this, &AShinbi::StopAttackCast);
 }
 
-void AShinbi::StartPrimary()
-{
-	// 공격중이 아닐 시
-	if (!bAttacking)
-	{
-		bAttacking = true;
-		SaveCombo = true;
-		ComboAttack();
-	}
-	// 이미 공격중일 시 콤보 이어하기
-	else if (!SaveCombo)
-	{
-		SaveCombo = true;
-	}
-}
+//void AShinbi::StartPrimary()
+//{
+//	// 공격중이 아닐 시
+//	if (CurrentAbility == EAbilityType::None)
+//	{
+//		SaveCombo = true;
+//		ComboAttack();
+//	}
+//	// 이미 공격중일 시 콤보 이어하기
+//	else if (!SaveCombo)
+//	{
+//		SaveCombo = true;
+//	}
+//}
 
 void AShinbi::ComboAttack()
 {
 	if (SaveCombo && AttackMontages.Num() > 0)
 	{
 		// 공격 몽타주 애니메이션 재생
-		PlayAnimMontage(AttackMontages[AttackCount++]);
+		PlayAnimMontage(PrimaryAnim, 1.0f, PrimarySectionNames[SectionCount++]);
+		CurrentAbility = EAbilityType::Primary;
 
 		// 마지막 공격이면 공격 카운트 초기화
-		if (AttackMontages.Num() <= AttackCount)
+		if (AttackMontages.Num() <= SectionCount)
 		{
-			AttackCount = 0;
+			SectionCount = 0;
 		}
 	}
 }
@@ -78,14 +82,15 @@ void AShinbi::ComboAttack()
 void AShinbi::AbilityMR()
 {
 	// Attack Wolves 스킬 애니메이션 몽타주 실행
-	PlayAnimMontage(AttackWolvesMontage);
+	PlayAnimMontage(AbilityMRAnim);
+	CurrentAbility = EAbilityType::MouseR;
 }
 
 void AShinbi::StopAttackCast()
 {
-	MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(1));
+	MainUMG->GetAbilityBar()->SetAbilityUI(AbilityComp->GetAbilityInfo(1));
 	// 애님 몽타주의 End 섹션 재생
-	PlayAnimMontage(AttackWolvesMontage, 1.0f, TEXT("End"));
+	PlayAnimMontage(AbilityMRAnim, 1.0f, TEXT("End"));
 
 	// 울프 액터 생성
 	const FVector SpawnVec = GetActorLocation() + (GetActorForwardVector() * FVector(0, 0, -6.0f));
@@ -98,6 +103,7 @@ void AShinbi::StopAttackCast()
 
 	FTimerDelegate RespawnDelegate = FTimerDelegate::CreateUObject(this, &AShinbi::StopAttackWolves, Wolf);
 	GetWorldTimerManager().SetTimer(CircleWolvesTimer, RespawnDelegate, AttackWolvesDuration, false);
+	CurrentAbility = EAbilityType::None;
 }
 
 void AShinbi::StopAttackWolves(AShinbiWolf* Wolf)
@@ -113,41 +119,40 @@ void AShinbi::AbilityQ()
 	{
 		Super::AbilityQ();
 
-		PlayAnimMontage(DashMontage, 2.0f);
+		PlayAnimMontage(AbilityQAnim, 2.0f);
 		SetCameraParticle(DashParticle); // 카메라에 대쉬 이펙트 실행
 
 		// 정면으로 대쉬
 		LaunchCharacter(GetActorForwardVector() * DashPower, true, true);
+		CurrentAbility = EAbilityType::AbilityQ;
 	}
 }
 
 // Circling Wolves 스킬
 void AShinbi::AbilityE()
 {
-	if (bIsCircling)
+	if (!bCircling)
 	{
-		return;
+		Super::AbilityE();
+
+		// 플레이어 CircleWovles 애니메이션 실행
+		PlayAnimMontage(AbilityEAnim);
+		// 늑대들 생성
+		float Angle = 0.0f;
+		for (int i = 0; i < 4; ++i)
+		{
+			AShinbiWolf* Wolf = ObjPoolComp->ActiveObject<AShinbiWolf>();
+			Wolf->SetCirclingAngle(Angle);
+			Wolf->Action(EWolfState::Circle);
+			CirclingWolfSet.Add(Wolf);
+
+			Angle += CircleWolfRate;
+		}
+		// CirclingWolvesDuration 시간 후 울프 객체들 사라짐
+		GetWorldTimerManager().SetTimer(CircleWolvesTimer, this, &AShinbi::StopCircleWolves, CirclingWolvesDuration, false);
+		CurrentAbility = EAbilityType::AbilityE;
+		bCircling = true;
 	}
-
-	Super::AbilityE();
-
-	// 플레이어 CircleWovles 애니메이션 실행
-	PlayAnimMontage(CircleWolvesMontage);
-	// 늑대들 생성
-	float Angle = 0.0f;
-	for (int i = 0; i < 4; ++i)
-	{
-		AShinbiWolf* Wolf = ObjPoolComp->ActiveObject<AShinbiWolf>();
-		Wolf->SetCirclingAngle(Angle);
-		Wolf->Action(EWolfState::Circle);
-		CirclingWolfSet.Add(Wolf);
-
-		Angle += CircleWolfRate;
-	}
-	// CirclingWolvesDuration 시간 후 울프 객체들 사라짐
-	GetWorldTimerManager().SetTimer(CircleWolvesTimer, this, &AShinbi::StopCircleWolves, CirclingWolvesDuration, false);
-
-	bIsCircling = true;
 }
 
 void AShinbi::StopCircleWolves()
@@ -160,11 +165,17 @@ void AShinbi::StopCircleWolves()
 		ObjPoolComp->SetDisable(wolf);
 	}
 	CirclingWolfSet.Empty();
-	bIsCircling = false;
+	bCircling = false;
+	CurrentAbility = EAbilityType::None;
 }
 
 void AShinbi::Ultimate()
 {
+	if (CurrentAbility == EAbilityType::Ultimate)
+	{
+		return;
+	}
+
 	TargetPawn = FocusView();
 	if (TargetPawn != nullptr)
 	{
@@ -174,7 +185,7 @@ void AShinbi::Ultimate()
 		MarkerFX = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), UltMarker, TargetPawn->GetActorTransform());
 
 		// 애니메이션 실행
-		PlayAnimMontage(UltMontage);
+		PlayAnimMontage(UltimateAnim);
 
 		// 타겟과의 각도 구함
 		FVector Dir = TargetPawn->GetActorLocation() - GetActorLocation();
@@ -199,6 +210,7 @@ void AShinbi::Ultimate()
 		}
 	}
 	GetWorldTimerManager().SetTimer(MarkerTimer, this, &AShinbi::DestroyMarker, 0.6f, false);
+	CurrentAbility = EAbilityType::Ultimate;
 }
 
 // 타겟 위에 마커 이펙트 생성
@@ -217,6 +229,7 @@ void AShinbi::UltimateHitNotify()
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), UltFinalFX, TargetPawn->GetActorTransform());
 		GetWorldTimerManager().SetTimer(UltShakeTimer, this, &AShinbi::CameraShake, 0.7f, false);
 		TargetPawn = nullptr;
+		CurrentAbility = EAbilityType::None;
 	}
 }
 
@@ -239,12 +252,4 @@ FVector AShinbi::SetAngle(FVector NewLocation, float NewAngle)
 void AShinbi::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-
-	// 늑대 배열 액터 삭제 및 초기화
-	//for (int i = 0; i < MaxWolfNum; ++i)
-	//{
-	//	Wolves[i]->SetLifeSpan(0.01f);
-	//	Wolves[i] = nullptr;
-	//}
-	//Wolves.Empty();
 }

@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "BaseCharacter.h"
+#include "Runtime/Engine/Classes/GameFramework/PlayerController.h"
 
 // Sets default values
 ABaseCharacter::ABaseCharacter()
@@ -9,7 +10,7 @@ ABaseCharacter::ABaseCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	TraceDistance = 2000.0f;
-	AttackCount = 0;
+	SectionCount = 0;
 	SaveCombo = true;
 
 	// 스킬 함수들 함수 포인터 배열에 바인드
@@ -161,6 +162,16 @@ void ABaseCharacter::SetCameraParticle(UParticleSystem * NewParticle)
 	}
 }
 
+void ABaseCharacter::SetMouseCenterLocation()
+{
+	UGameViewportClient* Viewport = GetWorld()->GetGameViewport();
+	FVector2D Center;
+	Viewport->GetViewportSize(Center);
+
+	APlayerController* PCon = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	PCon->SetMouseLocation(Center.X * 0.5f, Center.Y * 0.5f);
+}
+
 void ABaseCharacter::StartPrimary()
 {
 	// 공격중이 아닐 시
@@ -181,7 +192,7 @@ void ABaseCharacter::ComboAttack()
 {
 	if (MainUMG)
 	{
-		MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::Primary)));
+		MainUMG->GetAbilityBar()->SetAbilityUI(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::Primary)));
 	}
 }
 
@@ -193,9 +204,9 @@ void ABaseCharacter::StopPrimary()
 // 공격 변수들 초기화
 void ABaseCharacter::ResetComboAttack()
 {
-	SaveCombo = true;
 	bAttacking = false;
-	AttackCount = 0;
+	SaveCombo = true;
+	SectionCount = 0;
 }
 
 template<int T>
@@ -213,36 +224,36 @@ void ABaseCharacter::SetAbilityBar()
 	for (int i = 0; i < 5; ++i)
 	{
 		FAbilityInfo Info = AbilityComp->GetAbilityInfo(i);
-		MainUMG->GetAbilityBar()->SetImage(Info.Image, i);
+		MainUMG->GetAbilityBar()->SetAbilityImage(Info.Image, i);
 	}
 }
 
 /* 스킬 함수들 */
-void ABaseCharacter::Ultimate()
+void ABaseCharacter::AbilityMR()
 {
 	if (MainUMG)
 	{
-		MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::Ultimate)));
+		MainUMG->GetAbilityBar()->SetAbilityUI(AbilityComp->GetAbilityInfo(1));
 	}
 }
 void ABaseCharacter::AbilityQ()
 {
 	if (MainUMG)
 	{
-		MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::AbilityQ)));
+		MainUMG->GetAbilityBar()->SetAbilityUI(AbilityComp->GetAbilityInfo(2));
 	}
 }
 void ABaseCharacter::AbilityE()
 {
 	if (MainUMG)
 	{
-		MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::AbilityE)));
+		MainUMG->GetAbilityBar()->SetAbilityUI(AbilityComp->GetAbilityInfo(3));
 	}
 }
-void ABaseCharacter::AbilityMR()
+void ABaseCharacter::Ultimate()
 {
 	if (MainUMG)
 	{
-		MainUMG->GetAbilityBar()->SetAbility(AbilityComp->GetAbilityInfo(static_cast<int>(EAbilityType::MouseR)));
+		MainUMG->GetAbilityBar()->SetAbilityUI(AbilityComp->GetAbilityInfo(4));
 	}
 }

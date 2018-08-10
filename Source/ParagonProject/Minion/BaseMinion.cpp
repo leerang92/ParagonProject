@@ -32,3 +32,11 @@ void ABaseMinion::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 }
 
+float ABaseMinion::TakeDamage(float Damage, FDamageEvent const & DamageEvent, AController * EventInstigator, AActor * DamageCauser)
+{
+	UE_LOG(LogClass, Warning, TEXT("!!"));
+	if(DamageCauser != nullptr)
+		UE_LOG(LogClass, Warning, TEXT("%s"), *DamageCauser->GetName());
+	return 0.0f;
+}
+

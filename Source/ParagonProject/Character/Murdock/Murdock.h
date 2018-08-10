@@ -71,7 +71,7 @@ private:
 
 private:
 
-	virtual void StartPrimary() override;
+	//virtual void StartPrimary() override;
 
 	// Spread Shotgun Ability
 	virtual void AbilityMR() override;

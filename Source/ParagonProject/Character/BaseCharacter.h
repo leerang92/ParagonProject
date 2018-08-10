@@ -85,11 +85,34 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Attack")
 	bool SaveCombo;
 
+	// 마우스를 화면 중앙에 위치
+	void SetMouseCenterLocation();
+
+protected:
+	/* Ability Animations */
+	UPROPERTY(EditDefaultsOnly, Category = "Animation", meta = (AllowedPrivateAccess = true))
+	UAnimMontage* PrimaryAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation", meta = (AllowedPrivateAccess = true))
+	UAnimMontage* AbilityMRAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation", meta = (AllowedPrivateAccess = true))
+	UAnimMontage* AbilityQAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation", meta = (AllowedPrivateAccess = true))
+	UAnimMontage* AbilityEAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation", meta = (AllowedPrivateAccess = true))
+	UAnimMontage* UltimateAnim;
+
 protected:
 	/* 공격 */
-	bool bAttacking : 1;
+	// Primary 공격 몽타주 섹션 배열
+	TArray<FName> PrimarySectionNames;
 
-	int AttackCount;
+	bool bAttacking;
+
+	int SectionCount;
 
 	// 주 공격 시작
 	virtual void StartPrimary();

@@ -16,6 +16,12 @@ struct FUsableAbilityInfo
 	UPROPERTY()
 	class UImage* Image;
 
+	UPROPERTY()
+	class UImage* AbilIcon;
+
+	UPROPERTY()
+	class UTextBlock* Text;
+
 	float CoolDown;
 
 	float Gauge;
@@ -26,6 +32,8 @@ struct FUsableAbilityInfo
 
 	FUsableAbilityInfo() :
 		Image(nullptr),
+		AbilIcon(nullptr),
+		Text(nullptr),
 		CoolDown(0.0f),
 		Gauge(1.0f),
 		UsageCountMax(1),
@@ -46,17 +54,22 @@ public:
 
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
-	void SetImage(UTexture* Image, const int Index);
+	void SetAbilityImage(UTexture* Image, const int Index);
 
-	void SetAbility(const FAbilityInfo Type);
+	void SetAbilityUI(const FAbilityInfo Type);
 
 	UPROPERTY(EditAnywhere)
 	UTexture* BackgroundTexture;
 
 private:
+	void SetBrush(UImage* SetImage, bool bUsable = true);
+
+private:
 	// 사용한 스킬 배열
 	UPROPERTY()
 	TArray<FUsableAbilityInfo> UpdateAbilitys;
+
+	FNumberFormattingOptions NumOption;
 
 	/* 어빌리티 이미지 */
 	UPROPERTY()
@@ -86,6 +99,8 @@ private:
 	UPROPERTY()
 	class UImage* Background_4;
 
+	UPROPERTY()
+	TArray<class UTextBlock*> Texts;
 	UPROPERTY()
 	class UTextBlock* CoolDownText_0;
 	UPROPERTY()

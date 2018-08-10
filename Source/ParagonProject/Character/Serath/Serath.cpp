@@ -3,15 +3,11 @@
 #include "Serath.h"
 #include "Runtime/Engine/Classes/Materials/Material.h"
 #include "Runtime/Engine/Classes/Components/DecalComponent.h"
-#include "Runtime/Engine/Classes/GameFramework/PlayerController.h"
 #include "DrawDebugHelpers.h"
 
 ASerath::ASerath()
 {
 	CurrentAbility = EAbilityType::None;
-
-	SectionCount = 0;
-
 	AscendFlySpeed = 10.0f;
 	AscendDiveSpeed = 20.0f;
 
@@ -76,9 +72,11 @@ void ASerath::StartPrimary()
 void ASerath::ComboAttack()
 {
 	// 순차적으로 Primary 공격 애니메이션 재생
-	if (SaveCombo && AttackMontages.Num() > 0)
+	if (SaveCombo && PrimaryAnim != nullptr)
 	{
-		PlayAnimMontage(AttackMontages[0], 1.5f, PrimarySectionNames[SectionCount++]);
+		Super::ComboAttack();
+
+		PlayAnimMontage(PrimaryAnim, 1.5f, PrimarySectionNames[SectionCount++]);
 
 		if (PrimarySectionNames.Num() <= SectionCount)
 		{
@@ -103,26 +101,39 @@ void ASerath::AbilityMR()
 {
 	Super::AbilityMR();
 
-	PlayAnimMontage(WingFlapAnim);
+	PlayAnimMontage(AbilityMRAnim);
+	const FVector Origin = GetActorLocation() + GetActorForwardVector() * 200.0f;
+	TArray<AActor*> IgnoreActor;
+	bool bDamage = UGameplayStatics::ApplyRadialDamage(GetWorld(), 100.0f, Origin, 250.0f, UDamageType::StaticClass(), IgnoreActor, this);
+	if (bDamage)
+	{
+		UE_LOG(LogClass, Warning, TEXT("Set Damage"));
+	}
+
 }
 
 // Heaven's Fury
 void ASerath::AbilityQ()
 {
+	if (CurrentAbility == EAbilityType::AbilityE)
+	{
+		return;
+	}
 	// Fury 스킬 중지
-	if (CurrentAbility == EAbilityType::AbilityQ)
+	else if (CurrentAbility == EAbilityType::AbilityQ)
 	{
 		DecalComp->SetLifeSpan(0.01f);
 		DecalComp = nullptr;
-		PlayAnimMontage(FuryAnim, 1.0f, TEXT("Cancel"));
+		PlayAnimMontage(AbilityQAnim, 1.0f, TEXT("Cancel"));
 		CurrentAbility = EAbilityType::None;
 	}
 	// Fury 캐스트 시작
 	else if (CurrentAbility != EAbilityType::AbilityQ)
 	{
+		Super::AbilityQ();
+		SetMouseCenterLocation();
 		DecalComp = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), Decal, FVector(140.0f, 140.0f, 140.0f), GetActorLocation());
-		GetCharacterMovement()->bUseControllerDesiredRotation = false;
-		PlayAnimMontage(FuryAnim);
+		PlayAnimMontage(AbilityQAnim);
 
 		CurrentAbility = EAbilityType::AbilityQ;
 	}
@@ -131,17 +142,21 @@ void ASerath::AbilityQ()
 // Acend
 void ASerath::AbilityE()
 {
+	if (CurrentAbility == EAbilityType::AbilityE || CurrentAbility == EAbilityType::AbilityQ)
+	{
+		return;
+	}
 	Super::AbilityE();
 
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	// 중력 제거 및 캐릭터가 날아갈 목표 위치 지정
 	GetCharacterMovement()->GravityScale = 0.0f;
 	FlyTargetVec = GetActorLocation() + GetActorUpVector() * 1500.0f;
-
 	// 카메라 파티클 생성 및 Ascend 애니메이션 재생
 	SetCameraParticle(AscendCamFX);
-	PlayAnimMontage(AscendAnim);
-
+	PlayAnimMontage(AbilityEAnim);
 	CurrentAbility = EAbilityType::AbilityE;
+	
 }
 
 void ASerath::SetHeavenFury()
@@ -149,8 +164,8 @@ void ASerath::SetHeavenFury()
 	// 데칼 삭제
 	DecalComp->SetLifeSpan(0.001f);
 
-	PlayAnimMontage(FuryAnim, 1.0f, TEXT("Hover"));
-	GetCharacterMovement()->bUseControllerDesiredRotation = true;
+	PlayAnimMontage(AbilityQAnim, 1.0f, TEXT("Hover"));
+	//GetCharacterMovement()->bUseControllerDesiredRotation = true;
 
 	CurrentAbility = EAbilityType::None;
 }
@@ -176,6 +191,7 @@ void ASerath::MovementAscendAbility(const float DeltaTime)
 	case EAscendState::Fly: // 공중에 있을 때
 		if (DecalComp == nullptr)
 		{
+			SetMouseCenterLocation();
 			// 타겟 데칼 생성
 			DecalComp = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), Decal, FVector(240.0f, 240.0f, 240.0f), GetActorLocation());
 		}
@@ -199,11 +215,12 @@ void ASerath::MovementAscendAbility(const float DeltaTime)
 			DecalComp = nullptr;
 
 			GetCharacterMovement()->GravityScale = 1.0f;
-			PlayAnimMontage(AscendAnim, 1.0f, TEXT("Land"));
+			PlayAnimMontage(AbilityEAnim, 1.0f, TEXT("Land"));
 
 			// 상태 초기화
 			CurrentAscend = EAscendState::None;
 			CurrentAbility = EAbilityType::None;
+			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 		}
 		break;
 	}
@@ -217,7 +234,6 @@ float ASerath::GetTraceHitDistance(const FVector& NewPos, const FVector& NewDir)
 	Controller->GetPlayerViewPoint(CamLoc, CamRot);
 	const FVector EndLoc = NewPos + NewDir * 10000.0f;
 
-	//DrawDebugLine(GetWorld(), CamLoc, EndLoc, FColor::Red, false, 3.0f, 3.0f);
 	// 트레이스 발사
 	FCollisionQueryParams TraceParam(TEXT("DecalTrace"), true, this);
 	TraceParam.bTraceAsyncScene = true;

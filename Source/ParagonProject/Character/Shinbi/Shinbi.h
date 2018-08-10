@@ -69,28 +69,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Particle")
 	class UParticleSystem* UltFinalFX;
 
-	/* 스킬 몽타주 애니메이션 */
-	// Dash 스킬 몽타주 애니메이션
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	class UAnimMontage* DashMontage;
-
-	// AttackWolves 스킬 몽타주 애니메이션
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	class UAnimMontage* AttackWolvesMontage;
-
-	// CircleWolves 스킬 몽타주 애니메이션
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	class UAnimMontage* CircleWolvesMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	class UAnimMontage* UltMontage;
-
 	UPROPERTY(EditAnywhere, Category = Camera)
 	TSubclassOf<UCameraShake> CamShake;
 
 protected:
 	/* Attack */
-	virtual void StartPrimary() override;
+	//virtual void StartPrimary() override;
 
 	virtual void ComboAttack() override;
 
@@ -105,6 +89,8 @@ protected:
 private:
 	FTimerHandle AttackWolvesTimer;
 
+	EAbilityType CurrentAbility;
+
 	// Attack Wolves 스킬 캐스트 중단 및 늑대 소환
 	void StopAttackCast();
 
@@ -116,24 +102,24 @@ private:
 	// Circle Wolves 스킬 중단 타이머핸들
 	FTimerHandle CircleWolvesTimer;
 
+	bool bCircling : 1;
+
 	// Circle Wolves 스킬 사용시 늑대 생성 간격
 	UPROPERTY(EditDefaultsOnly, Category = "Ability", meta = (AllowedPrivateAccess = "true"))
 	float CircleWolfRate;
-
-	bool bIsCircling : 1;
 
 	// Circle Wolves 스킬 중단
 	void StopCircleWolves();
 
 	FVector SetAngle(FVector NewLocation, float NewAngle);
 
-	bool bIsUltimate : 1;
-
 	int UltHitCount;
 
 	// Primary 스킬 늑대 생성 타이머핸들
 	FTimerHandle UltSpawnTimers[8];
 
+	// Ultimate 스킬 타겟 대
+	UPROPERTY()
 	class APawn* TargetPawn;
 
 	FTimerHandle UltShakeTimer;

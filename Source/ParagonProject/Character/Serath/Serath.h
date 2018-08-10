@@ -45,17 +45,6 @@ protected:
 	virtual void ResetComboAttack() override;
 
 public:
-
-	/* Animation */
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	class UAnimMontage* WingFlapAnim;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	class UAnimMontage* FuryAnim;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	class UAnimMontage* AscendAnim;
-
 	/* Paritcle */
 	UPROPERTY(EditDefaultsOnly, Category = "Particle")
 	class UParticleSystem* AscendCamFX;
@@ -74,22 +63,25 @@ public:
 	class UMaterial* Decal;
 
 private:
-	EAbilityType CurrentAbility;
-
 	EAscendState CurrentAscend;
 
-	// Primary 공격 몽타주 섹션 배열
-	TArray<FName> PrimarySectionNames;
+	EAbilityType CurrentAbility;
 
-	int SectionCount;
+	bool bAscend : 1;
+
+	bool bFury : 1;
 
 	/* Ability */
+	// Chastise
 	virtual void AbilityMR() override;
 
+	// Heaven's Fury
 	virtual void AbilityQ() override;
 
+	// Ascend
 	virtual void AbilityE() override;
 
+	// Heaven's Fury 능력 사용 중 선택한 범위에 공격 적용
 	void SetHeavenFury();
 
 	// Ascend 기술에 따른 캐릭터 이동
@@ -117,7 +109,7 @@ private:
 	class UParticleSystemComponent* AscendFXComp;
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Character")
+	UFUNCTION(BlueprintCallable, Category = "Player Character")
 	FORCEINLINE EAbilityType GetCurrentAbility() const { return CurrentAbility; }
-	
+
 };

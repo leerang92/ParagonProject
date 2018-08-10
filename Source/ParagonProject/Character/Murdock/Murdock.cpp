@@ -37,29 +37,28 @@ void AMurdock::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("AbilityQ", IE_Released, this, &AMurdock::StopShield);
 }
 
-void AMurdock::StartPrimary()
-{
-		// 공격중이 아닐 시
-	if (!bAttacking)
-	{
-		bAttacking = true;
-		SaveCombo = true;
-		ComboAttack();
-	}
-	// 이미 공격중일 시 콤보 이어하기
-	else if (!SaveCombo)
-	{
-		SaveCombo = true;
-	}
-}
+//void AMurdock::StartPrimary()
+//{
+//		// 공격중이 아닐 시
+//	if (CurrentAbility == EAbilityType::None)
+//	{
+//		SaveCombo = true;
+//		ComboAttack();
+//	}
+//	// 이미 공격중일 시 콤보 이어하기
+//	else if (!SaveCombo)
+//	{
+//		SaveCombo = true;
+//	}
+//}
 
 void AMurdock::ComboAttack()
 {
-	if (SaveCombo && AttackMontages.Num() > 0)
+	if (SaveCombo && PrimaryAnim != nullptr)
 	{
 		Super::ComboAttack();
 
-		PlayAnimMontage(AttackMontages[0]);
+		PlayAnimMontage(PrimaryAnim);
 
 		const FVector CamLoc = CameraComp->GetComponentLocation();
 		const FRotator CamRot = CameraComp->GetComponentRotation();
@@ -91,7 +90,7 @@ void AMurdock::AbilityMR()
 {
 	Super::AbilityMR();
 
-	PlayAnimMontage(AttackMontages[1]);
+	PlayAnimMontage(AbilityMRAnim);
 }
 
 // Gun Shield
@@ -102,7 +101,7 @@ void AMurdock::AbilityQ()
 	CurrentAbility = EAbilityType::AbilityQ;
 
 	// 쉴드 애니메이션 재생 및 이펙트 생성
-	PlayAnimMontage(AttackMontages[2]);
+	PlayAnimMontage(AbilityQAnim);
 	ShieldComp = UGameplayStatics::SpawnEmitterAttached(ShieldFX, GetMesh(), TEXT("Shield"));
 }
 
@@ -127,24 +126,24 @@ void AMurdock::AbilityE()
 
 void AMurdock::StartShotgun()
 {
-	PlayAnimMontage(AttackMontages[1], 1.0f, TEXT("End"));
+	PlayAnimMontage(AbilityMRAnim, 1.0f, TEXT("End"));
 }
 
 void AMurdock::StopShield()
 {
 	CurrentAbility = EAbilityType::Primary;
 	ShieldComp->Deactivate();
-	PlayAnimMontage(AttackMontages[2], 1.0f, TEXT("End"));
+	PlayAnimMontage(AbilityQAnim, 1.0f, TEXT("End"));
 }
 
 void AMurdock::ShieldHitStart()
 {
-	PlayAnimMontage(AttackMontages[2], 1.0f, TEXT("Hit"));
+	PlayAnimMontage(AbilityQAnim, 1.0f, TEXT("Hit"));
 }
 
 void AMurdock::ShieldHitEnd()
 {
-	PlayAnimMontage(AttackMontages[2], 1.0f, TEXT("Loop"));
+	PlayAnimMontage(AbilityQAnim, 1.0f, TEXT("Loop"));
 }
 
 void AMurdock::StopHotPursuit(float WalkSpeed)
