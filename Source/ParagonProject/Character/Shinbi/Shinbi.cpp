@@ -64,7 +64,7 @@ void AShinbi::SetupPlayerInputComponent(UInputComponent * PlayerInputComponent)
 
 void AShinbi::ComboAttack()
 {
-	if (SaveCombo && AttackMontages.Num() > 0)
+	if (bSaveCombo && AttackMontages.Num() > 0)
 	{
 		// 공격 몽타주 애니메이션 재생
 		PlayAnimMontage(PrimaryAnim, 1.0f, PrimarySectionNames[SectionCount++]);

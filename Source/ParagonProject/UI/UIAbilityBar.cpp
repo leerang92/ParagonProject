@@ -71,6 +71,11 @@ void UUIAbilityBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 void UUIAbilityBar::SetAbilityImage(UTexture * Image, const int Index)
 {
+	if (Image == nullptr)
+	{
+		UE_LOG(LogClass, Error, TEXT("Null Reference ability icon image"));
+	}
+
 	//Ability Image 설정
 	UImage* SetImage = Images[Index];
 	SetImage->GetDynamicMaterial()->SetTextureParameterValue(TEXT("Texture"), Image);
@@ -89,7 +94,7 @@ void UUIAbilityBar::SetAbilityUI(const FAbilityInfo NewAbility)
 	AbilityInfo.CoolDown = NewAbility.CoolDown;
 	//SetBrush(AbilityInfo.AbilIcon, false);
 
-	// 업데이트 배열에 추가
+	// Add update array
 	UpdateAbilitys.Emplace(AbilityInfo);
 }
 

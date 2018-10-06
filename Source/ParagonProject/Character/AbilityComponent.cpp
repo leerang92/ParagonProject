@@ -10,59 +10,31 @@ UAbilityComponent::UAbilityComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
 	// ...
 }
 
-
-// Called when the game starts
-void UAbilityComponent::BeginPlay()
+TArray<FAbilityInfo> UAbilityComponent::GetAbilityInfoAll()
 {
-	Super::BeginPlay();
-
+	return AbilityInfo;
 }
 
-void UAbilityComponent::UseAbility(const EAbilityType Type)
-{
-	switch (Type)
-	{
-	case EAbilityType::Primary:
-		break;
-	case EAbilityType::MouseR:
-		break;
-	case EAbilityType::AbilityQ:
-		break;
-	case EAbilityType::AbilityE:
-		break;
-	case EAbilityType::Ultimate:
-		break;
-	}
-}
-
-FAbilityInfo UAbilityComponent::GetAbilityInfo(int Index) const
+FAbilityInfo UAbilityComponent::GetAbilityInfo(int Index)
 {
 	return AbilityInfo[Index];
 }
 
-void UAbilityComponent::SetPrimary()
+FAbilityInfo UAbilityComponent::GetAbilityInfo(EAbilityType Type)
 {
+	for (auto& info : AbilityInfo)
+	{
+		if (info.Type == Type)
+		{
+			return info;
+		}
+	}
+
+	UE_LOG(LogClass, Error, TEXT("Find not ability type"));
+	return FAbilityInfo();
 }
-
-void UAbilityComponent::SetMouseR()
-{
-}
-
-void UAbilityComponent::SetAbility1()
-{
-}
-
-void UAbilityComponent::SetAbility2()
-{
-}
-
-void UAbilityComponent::SetUltimate()
-{
-}
-
-

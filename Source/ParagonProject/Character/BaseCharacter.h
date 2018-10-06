@@ -31,9 +31,6 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UPROPERTY(EditAnywhere, Category = "Component")
-	class UAbilityComponent* AbilityComp;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -51,7 +48,7 @@ protected:
 	void LookUpAtRate(float Rate);
 
 public:
-	/* 카메라 */
+	/* Camera Variables */
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	float BaseTurnRate;
 
@@ -67,7 +64,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	class UCameraComponent* CameraComp;
 
-	/* 카메라 파티클 */
 	UPROPERTY(EditAnywhere, Category = "Particle")
 	class UParticleSystemComponent* CamParticle;
 
@@ -83,9 +79,9 @@ public:
 	virtual void ComboAttack();
 
 	UPROPERTY(BlueprintReadWrite, Category = "Attack")
-	bool SaveCombo;
+	bool bSaveCombo;
 
-	// 마우스를 화면 중앙에 위치
+	// Set the mouse position to center of the screen
 	void SetMouseCenterLocation();
 
 protected:
@@ -106,29 +102,33 @@ protected:
 	UAnimMontage* UltimateAnim;
 
 protected:
-	/* 공격 */
-	// Primary 공격 몽타주 섹션 배열
+
+	UPROPERTY(EditAnywhere, Category = "Component")
+	class UAbilityComponent* AbilityComp;
+
+	/* Attack */
+	// Primary attack is montage section name array
 	TArray<FName> PrimarySectionNames;
 
 	bool bAttacking;
 
 	int SectionCount;
 
-	// 주 공격 시작
+	// Start primary attack
 	virtual void StartPrimary();
 
-	// 다음 콤보 어택 중단
+	// Stop next attack 
 	virtual void StopPrimary();
 
-	// 현재 콤보 공격 초기화
+	// Reset current combo attack
 	UFUNCTION(BlueprintCallable, Category = "Attack", meta = (AllowedPrivateAccess = true))
 	virtual void ResetComboAttack();
 
 	/* Ability */
 	template<int T>
-	void UseAbility();
+	void OnAbility();
 
-	// Ability 함수 포인터 및 배열
+	// Ability function pointer
 	typedef void(ABaseCharacter::*AbilityFp)();
     TArray<AbilityFp> AbilityFuncs;
 
@@ -137,11 +137,20 @@ protected:
 	virtual void AbilityE();
 	virtual void Ultimate();
 
+	// Demage to nearby actors
+	void OnRangeDamage(FVector& Origin, float BaseDamage, float DamageRadius);
+
 public:
-	inline const UCameraComponent * GetCameraComponent()
+	FORCEINLINE const UCameraComponent * GetCameraComponent()
 	{
 		return CameraComp;
 	}
+
+	FORCEINLINE const UAbilityComponent* GetAbilityComp()
+	{
+		return AbilityComp;
+	}
+
 
 	/* UI */
 public:
@@ -151,6 +160,4 @@ public:
 protected:
 	UPROPERTY()
 	class UMainUMG* MainUMG;
-
-	void SetAbilityBar();
 };

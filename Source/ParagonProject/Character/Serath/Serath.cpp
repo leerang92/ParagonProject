@@ -7,11 +7,13 @@
 
 ASerath::ASerath()
 {
-	CurrentAbility = EAbilityType::None;
+	PrimaryActorTick.bCanEverTick = true;
+
+	CurrentAbilityType = EAbilityType::None;
 	AscendFlySpeed = 10.0f;
 	AscendDiveSpeed = 20.0f;
 
-	// Primary 몽타주 애니메이션 섹션들
+	// Register primary montage animation section name
 	PrimarySectionNames.Add(TEXT("A_Start"));
 	PrimarySectionNames.Add(TEXT("B_Start"));
 	PrimarySectionNames.Add(TEXT("C_Start"));
@@ -35,13 +37,13 @@ void ASerath::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	// Heaven's Fury 캐스팅 중 타겟 데칼 위치 설정
-	if (CurrentAbility == EAbilityType::AbilityQ)
+	if (CurrentAbilityType == EAbilityType::AbilityQ)
 	{
 		FVector DecalLoc = GetMouseWorldPosition();
 		DecalComp->SetWorldLocation(DecalLoc);
 	}
 	// Ascend 스킬에 따른 단계적 이동
-	if (CurrentAscend != EAscendState::None)
+	if (CurrentAscendState != EAscendState::None)
 	{
 		MovementAscendAbility(DeltaTime);
 	}
@@ -49,15 +51,15 @@ void ASerath::Tick(float DeltaTime)
 
 void ASerath::StartPrimary()
 {
-	if (CurrentAbility == EAbilityType::AbilityQ)
+	if (CurrentAbilityType == EAbilityType::AbilityQ)
 	{
-		SetHeavenFury();
+		OnHeavenFuryToDamage();
 	}
-	else if (CurrentAscend == EAscendState::Fly)
+	else if (CurrentAscendState == EAscendState::Fly)
 	{
 		// 현재 마우스 위치로 다이브할 위치 설정
 		FlyTargetVec = AscendDecalLoc;
-		CurrentAscend = EAscendState::Dive;
+		CurrentAscendState = EAscendState::Dive;
 
 		// Ascend Dive 파티클 생성
 		AscendFXComp = UGameplayStatics::SpawnEmitterAttached(AscendDiveFX, GetMesh(), TEXT("Root"));
@@ -65,14 +67,14 @@ void ASerath::StartPrimary()
 	else
 	{
 		Super::StartPrimary();
-		CurrentAbility = EAbilityType::Primary;
+		CurrentAbilityType = EAbilityType::Primary;
 	}
 }
 
 void ASerath::ComboAttack()
 {
 	// 순차적으로 Primary 공격 애니메이션 재생
-	if (SaveCombo && PrimaryAnim != nullptr)
+	if (bSaveCombo && PrimaryAnim != nullptr)
 	{
 		Super::ComboAttack();
 
@@ -93,7 +95,7 @@ void ASerath::ResetComboAttack()
 
 void ASerath::SetFly()
 {
-	CurrentAscend = EAscendState::Intro;
+	CurrentAscendState = EAscendState::Intro;
 }
 
 // Wing Blast
@@ -102,47 +104,44 @@ void ASerath::AbilityMR()
 	Super::AbilityMR();
 
 	PlayAnimMontage(AbilityMRAnim);
-	const FVector Origin = GetActorLocation() + GetActorForwardVector() * 200.0f;
-	TArray<AActor*> IgnoreActor;
-	bool bDamage = UGameplayStatics::ApplyRadialDamage(GetWorld(), 100.0f, Origin, 250.0f, UDamageType::StaticClass(), IgnoreActor, this);
-	if (bDamage)
-	{
-		UE_LOG(LogClass, Warning, TEXT("Set Damage"));
-	}
 
+	FVector Origin = GetActorLocation() + GetActorForwardVector() * 200.0f;
+	OnRangeDamage(Origin, 100.0f, 250.0f);
 }
 
 // Heaven's Fury
 void ASerath::AbilityQ()
 {
-	if (CurrentAbility == EAbilityType::AbilityE)
+	if (CurrentAbilityType == EAbilityType::AbilityE)
 	{
 		return;
 	}
-	// Fury 스킬 중지
-	else if (CurrentAbility == EAbilityType::AbilityQ)
+	// Cancel
+	else if (CurrentAbilityType == EAbilityType::AbilityQ)
 	{
 		DecalComp->SetLifeSpan(0.01f);
 		DecalComp = nullptr;
 		PlayAnimMontage(AbilityQAnim, 1.0f, TEXT("Cancel"));
-		CurrentAbility = EAbilityType::None;
+		CurrentAbilityType = EAbilityType::None;
 	}
-	// Fury 캐스트 시작
-	else if (CurrentAbility != EAbilityType::AbilityQ)
+	// Start casting
+	else if (CurrentAbilityType != EAbilityType::AbilityQ)
 	{
 		Super::AbilityQ();
+
 		SetMouseCenterLocation();
 		DecalComp = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), Decal, FVector(140.0f, 140.0f, 140.0f), GetActorLocation());
 		PlayAnimMontage(AbilityQAnim);
 
-		CurrentAbility = EAbilityType::AbilityQ;
+		CurrentAbilityType = EAbilityType::AbilityQ;
 	}
 }
 
 // Acend
 void ASerath::AbilityE()
 {
-	if (CurrentAbility == EAbilityType::AbilityE || CurrentAbility == EAbilityType::AbilityQ)
+	if (CurrentAbilityType == EAbilityType::AbilityE 
+		|| CurrentAbilityType == EAbilityType::AbilityQ)
 	{
 		return;
 	}
@@ -155,25 +154,27 @@ void ASerath::AbilityE()
 	// 카메라 파티클 생성 및 Ascend 애니메이션 재생
 	SetCameraParticle(AscendCamFX);
 	PlayAnimMontage(AbilityEAnim);
-	CurrentAbility = EAbilityType::AbilityE;
-	
+
+	CurrentAbilityType = EAbilityType::AbilityE;
 }
 
-void ASerath::SetHeavenFury()
+void ASerath::OnHeavenFuryToDamage()
 {
 	// 데칼 삭제
 	DecalComp->SetLifeSpan(0.001f);
 
+	FVector Origin = DecalComp->RelativeLocation;
+	OnRangeDamage(Origin, 100.0f, 250.0f);
+
 	PlayAnimMontage(AbilityQAnim, 1.0f, TEXT("Hover"));
 	//GetCharacterMovement()->bUseControllerDesiredRotation = true;
-
-	CurrentAbility = EAbilityType::None;
+	CurrentAbilityType = EAbilityType::None;
 }
 
 void ASerath::MovementAscendAbility(const float DeltaTime)
 {
 	FVector MoveVec, DistVec;
-	switch (CurrentAscend)
+	switch (CurrentAscendState)
 	{
 	case EAscendState::Intro: // 시작
 		// 공중에 목표 위치까지 이동
@@ -184,7 +185,7 @@ void ASerath::MovementAscendAbility(const float DeltaTime)
 		DistVec = FlyTargetVec - GetActorLocation();
 		if (DistVec.Z < 0.5f)
 		{
-			CurrentAscend = EAscendState::Fly;
+			CurrentAscendState = EAscendState::Fly;
 		}
 		break;
 
@@ -218,8 +219,8 @@ void ASerath::MovementAscendAbility(const float DeltaTime)
 			PlayAnimMontage(AbilityEAnim, 1.0f, TEXT("Land"));
 
 			// 상태 초기화
-			CurrentAscend = EAscendState::None;
-			CurrentAbility = EAbilityType::None;
+			CurrentAscendState = EAscendState::None;
+			CurrentAbilityType = EAbilityType::None;
 			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 		}
 		break;

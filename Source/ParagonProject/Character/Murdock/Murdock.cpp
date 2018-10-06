@@ -54,7 +54,7 @@ void AMurdock::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AMurdock::ComboAttack()
 {
-	if (SaveCombo && PrimaryAnim != nullptr)
+	if (bSaveCombo && PrimaryAnim != nullptr)
 	{
 		Super::ComboAttack();
 

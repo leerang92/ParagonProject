@@ -63,9 +63,9 @@ public:
 	class UMaterial* Decal;
 
 private:
-	EAscendState CurrentAscend;
+	EAscendState CurrentAscendState;
 
-	EAbilityType CurrentAbility;
+	EAbilityType CurrentAbilityType;
 
 	bool bAscend : 1;
 
@@ -82,7 +82,7 @@ private:
 	virtual void AbilityE() override;
 
 	// Heaven's Fury 능력 사용 중 선택한 범위에 공격 적용
-	void SetHeavenFury();
+	void OnHeavenFuryToDamage();
 
 	// Ascend 기술에 따른 캐릭터 이동
 	void MovementAscendAbility(const float DeltaTime);
@@ -110,6 +110,6 @@ private:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Player Character")
-	FORCEINLINE EAbilityType GetCurrentAbility() const { return CurrentAbility; }
+	FORCEINLINE EAbilityType GetCurrentAbility() const { return CurrentAbilityType; }
 
 };

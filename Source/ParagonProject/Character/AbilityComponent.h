@@ -18,26 +18,15 @@ public:
 	// Sets default values for this component's properties
 	UAbilityComponent();
 
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
 public:	
-	void UseAbility(const EAbilityType Type);
+	TArray<FAbilityInfo> GetAbilityInfoAll();
 
-	FAbilityInfo GetAbilityInfo(int Index) const;
+	FAbilityInfo GetAbilityInfo(int Index);
+
+	FAbilityInfo GetAbilityInfo(EAbilityType Type);
 
 private:
-	void SetPrimary();
-
-	void SetMouseR();
-
-	void SetAbility1();
-
-	void SetAbility2();
-
-	void SetUltimate();
-
 	UPROPERTY(EditDefaultsOnly, Category = "Ability", meta = (AllowedPrivateAccess = true))
-	FAbilityInfo AbilityInfo[5];
+	TArray<FAbilityInfo> AbilityInfo;
+
 };
