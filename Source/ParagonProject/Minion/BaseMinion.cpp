@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "BaseMinion.h"
+#include "Character/BaseCharacter.h"
 
 
 // Sets default values
@@ -34,8 +35,12 @@ void ABaseMinion::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 float ABaseMinion::TakeDamage(float Damage, FDamageEvent const & DamageEvent, AController * EventInstigator, AActor * DamageCauser)
 {
-	if(DamageCauser != nullptr)
-		UE_LOG(LogClass, Warning, TEXT("%s to Damage"), *DamageCauser->GetName());
-	return 0.0f;
+	ABaseCharacter* Character = Cast<ABaseCharacter>(DamageCauser);
+	if (Character != nullptr)
+	{
+		Character->ReigisterHitActor(this);
+	}
+
+	return Damage;
 }
 

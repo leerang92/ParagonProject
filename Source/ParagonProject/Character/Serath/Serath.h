@@ -44,7 +44,12 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Serath", meta = (AllowedPrivatedAccess = true))
 	virtual void ResetComboAttack() override;
 
+	virtual void OnParticleToHitActor() override;
+
 public:
+	UPROPERTY(EditAnywhere)
+	class UMaterial* Decal;
+
 	/* Paritcle */
 	UPROPERTY(EditDefaultsOnly, Category = "Particle")
 	class UParticleSystem* AscendCamFX;
@@ -52,15 +57,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Particle")
 	class UParticleSystem* AscendDiveFX;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Particle")
+	class UParticleSystem* FuryImpactFX;
+
 	UPROPERTY(EditAnywhere, Category = "Ascend")
 	float AscendFlySpeed;
 
 	UPROPERTY(EditAnywhere, Category = "Ascend")
 	float AscendDiveSpeed;
-
-	// 데칼 마테리얼
-	UPROPERTY(EditAnywhere)
-	class UMaterial* Decal;
 
 private:
 	EAscendState CurrentAscendState;
@@ -83,6 +87,8 @@ private:
 
 	// Heaven's Fury 능력 사용 중 선택한 범위에 공격 적용
 	void OnHeavenFuryToDamage();
+
+	void StopHeavenFury();
 
 	// Ascend 기술에 따른 캐릭터 이동
 	void MovementAscendAbility(const float DeltaTime);
@@ -107,6 +113,8 @@ private:
 
 	UPROPERTY()
 	class UParticleSystemComponent* AscendFXComp;
+
+	FTimerHandle WaitTimer;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Player Character")

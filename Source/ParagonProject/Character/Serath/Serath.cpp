@@ -93,6 +93,19 @@ void ASerath::ResetComboAttack()
 	SectionCount = 0;
 }
 
+void ASerath::OnParticleToHitActor()
+{
+	if (HitActors.Num() > 0 && FuryImpactFX != nullptr)
+	{
+		for (auto& actor : HitActors)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), FuryImpactFX, actor->GetActorLocation());
+		}
+	}
+
+	HitActors.Reset();
+}
+
 void ASerath::SetFly()
 {
 	CurrentAscendState = EAscendState::Intro;
@@ -160,15 +173,26 @@ void ASerath::AbilityE()
 
 void ASerath::OnHeavenFuryToDamage()
 {
-	// 데칼 삭제
 	DecalComp->SetLifeSpan(0.001f);
 
+	PlayAnimMontage(AbilityQAnim, 1.0f, TEXT("Hover"));
+	float AnimPlayDuration = AbilityQAnim->GetSectionLength(3);
+
+	bMovement = false;
+	GetWorldTimerManager().SetTimer(WaitTimer, this, &ASerath::StopHeavenFury, AnimPlayDuration, false);
+
+	// Set Damage
 	FVector Origin = DecalComp->RelativeLocation;
 	OnRangeDamage(Origin, 100.0f, 250.0f);
 
-	PlayAnimMontage(AbilityQAnim, 1.0f, TEXT("Hover"));
-	//GetCharacterMovement()->bUseControllerDesiredRotation = true;
+	OnParticleToHitActor();
+}
+
+void ASerath::StopHeavenFury()
+{
+	bMovement = true;
 	CurrentAbilityType = EAbilityType::None;
+	GetWorldTimerManager().ClearTimer(WaitTimer);
 }
 
 void ASerath::MovementAscendAbility(const float DeltaTime)
@@ -176,8 +200,8 @@ void ASerath::MovementAscendAbility(const float DeltaTime)
 	FVector MoveVec, DistVec;
 	switch (CurrentAscendState)
 	{
-	case EAscendState::Intro: // 시작
-		// 공중에 목표 위치까지 이동
+	case EAscendState::Intro:
+		// Fly to target location
 		MoveVec = FMath::VInterpTo(GetActorLocation(), FlyTargetVec, DeltaTime, AscendFlySpeed);
 		SetActorLocation(MoveVec);
 
@@ -189,11 +213,11 @@ void ASerath::MovementAscendAbility(const float DeltaTime)
 		}
 		break;
 
-	case EAscendState::Fly: // 공중에 있을 때
+	case EAscendState::Fly:
 		if (DecalComp == nullptr)
 		{
 			SetMouseCenterLocation();
-			// 타겟 데칼 생성
+			// Spawn Target Decal
 			DecalComp = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), Decal, FVector(240.0f, 240.0f, 240.0f), GetActorLocation());
 		}
 
@@ -202,8 +226,8 @@ void ASerath::MovementAscendAbility(const float DeltaTime)
 		DecalComp->SetWorldLocation(AscendDecalLoc);
 		break;
 
-	case EAscendState::Dive: // 다이브
-		// 목표로 이동
+	case EAscendState::Dive:
+		// Movment to target location
 		MoveVec = FMath::VInterpTo(GetActorLocation(), FlyTargetVec, DeltaTime, AscendDiveSpeed);
 		SetActorLocation(MoveVec);
 
@@ -218,7 +242,7 @@ void ASerath::MovementAscendAbility(const float DeltaTime)
 			GetCharacterMovement()->GravityScale = 1.0f;
 			PlayAnimMontage(AbilityEAnim, 1.0f, TEXT("Land"));
 
-			// 상태 초기화
+			// Reset state
 			CurrentAscendState = EAscendState::None;
 			CurrentAbilityType = EAbilityType::None;
 			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);

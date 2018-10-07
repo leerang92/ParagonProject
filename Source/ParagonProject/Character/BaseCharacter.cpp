@@ -12,6 +12,7 @@ ABaseCharacter::ABaseCharacter()
 	TraceDistance	= 2000.0f;
 	SectionCount	= 0;
 	bSaveCombo		= true;
+	bMovement		= true;
 
 	// Register attack method
 	AbilityFuncs.Add(&ABaseCharacter::AbilityMR);
@@ -125,9 +126,21 @@ APawn * ABaseCharacter::FocusView()
 	return Cast<APawn>(Hit.GetActor());
 }
 
+void ABaseCharacter::MoveForward(float Value)
+{
+	if (bMovement &&(Controller != NULL) && (Value != 0.0f))
+	{
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		AddMovementInput(Direction, Value);
+	}
+}
+
 void ABaseCharacter::MoveRight(float Value)
 {
-	if ((Controller != NULL) && (Value != 0.0f))
+	if (bMovement && (Controller != NULL) && (Value != 0.0f))
 	{
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -145,18 +158,6 @@ void ABaseCharacter::TurnAtRate(float Rate)
 void ABaseCharacter::LookUpAtRate(float Rate)
 {
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
-}
-
-void ABaseCharacter::MoveForward(float Value)
-{
-	if ((Controller != NULL) && (Value != 0.0f))
-	{
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		AddMovementInput(Direction, Value);
-	}
 }
 
 void ABaseCharacter::SetCameraParticle(UParticleSystem * NewParticle)
@@ -248,8 +249,14 @@ void ABaseCharacter::OnRangeDamage(FVector & Origin, float BaseDamage, float Dam
 {
 	TArray<AActor*> IgnoreActor;
 	bool bDamage = UGameplayStatics::ApplyRadialDamage(GetWorld(), BaseDamage, Origin, DamageRadius, UDamageType::StaticClass(), IgnoreActor, this);
-	if (bDamage)
-	{
-		UE_LOG(LogClass, Warning, TEXT("Set Damage"));
-	}
+}
+
+void ABaseCharacter::ReigisterHitActor(AActor * HitActor)
+{
+	HitActors.Add(HitActor);
+}
+
+void ABaseCharacter::OnParticleToHitActor()
+{
+	
 }

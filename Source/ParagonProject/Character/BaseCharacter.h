@@ -84,6 +84,10 @@ public:
 	// Set the mouse position to center of the screen
 	void SetMouseCenterLocation();
 
+	bool bMovement;
+
+	void ReigisterHitActor(AActor* HitActor);
+
 protected:
 	/* Ability Animations */
 	UPROPERTY(EditDefaultsOnly, Category = "Animation", meta = (AllowedPrivateAccess = true))
@@ -140,6 +144,10 @@ protected:
 	// Demage to nearby actors
 	void OnRangeDamage(FVector& Origin, float BaseDamage, float DamageRadius);
 
+	TArray<AActor*> HitActors;
+
+	virtual void OnParticleToHitActor();
+
 public:
 	FORCEINLINE const UCameraComponent * GetCameraComponent()
 	{
@@ -150,7 +158,6 @@ public:
 	{
 		return AbilityComp;
 	}
-
 
 	/* UI */
 public:
