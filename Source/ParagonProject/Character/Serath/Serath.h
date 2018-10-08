@@ -32,17 +32,16 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Serath")
 	void SetFly();
+
+	void OnFuryDamage();
+
+	virtual void ComboAttack() override;
+
+	virtual void ResetComboAttack() override;
 
 protected:
 	virtual void StartPrimary() override;
-
-	UFUNCTION(BlueprintCallable, Category = "Serath", meta = (AllowedPrivatedAccess = true))
-	virtual void ComboAttack() override;
-
-	UFUNCTION(BlueprintCallable, Category = "Serath", meta = (AllowedPrivatedAccess = true))
-	virtual void ResetComboAttack() override;
 
 	virtual void OnParticleToHitActor() override;
 
@@ -86,7 +85,7 @@ private:
 	virtual void AbilityE() override;
 
 	// Heaven's Fury 능력 사용 중 선택한 범위에 공격 적용
-	void OnHeavenFuryToDamage();
+	void OnHeavenFuryHover();
 
 	void StopHeavenFury();
 

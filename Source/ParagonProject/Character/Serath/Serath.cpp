@@ -53,9 +53,10 @@ void ASerath::StartPrimary()
 {
 	if (CurrentAbilityType == EAbilityType::AbilityQ)
 	{
-		OnHeavenFuryToDamage();
+		OnHeavenFuryHover();
 	}
-	else if (CurrentAscendState == EAscendState::Fly)
+	else if (CurrentAbilityType == EAbilityType::AbilityE
+		&& CurrentAscendState == EAscendState::Fly)
 	{
 		// 현재 마우스 위치로 다이브할 위치 설정
 		FlyTargetVec = AscendDecalLoc;
@@ -171,28 +172,35 @@ void ASerath::AbilityE()
 	CurrentAbilityType = EAbilityType::AbilityE;
 }
 
-void ASerath::OnHeavenFuryToDamage()
+void ASerath::OnHeavenFuryHover()
 {
 	DecalComp->SetLifeSpan(0.001f);
 
+	bMovement = false;
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+
 	PlayAnimMontage(AbilityQAnim, 1.0f, TEXT("Hover"));
 	float AnimPlayDuration = AbilityQAnim->GetSectionLength(3);
-
-	bMovement = false;
 	GetWorldTimerManager().SetTimer(WaitTimer, this, &ASerath::StopHeavenFury, AnimPlayDuration, false);
-
-	// Set Damage
-	FVector Origin = DecalComp->RelativeLocation;
-	OnRangeDamage(Origin, 100.0f, 250.0f);
-
-	OnParticleToHitActor();
 }
 
 void ASerath::StopHeavenFury()
 {
 	bMovement = true;
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+
 	CurrentAbilityType = EAbilityType::None;
 	GetWorldTimerManager().ClearTimer(WaitTimer);
+}
+
+
+void ASerath::OnFuryDamage()
+{
+	// Set Damage
+	FVector Origin = DecalComp->RelativeLocation;
+	OnRangeDamage(Origin, 100.0f, 250.0f);
+
+	OnParticleToHitActor();
 }
 
 void ASerath::MovementAscendAbility(const float DeltaTime)
