@@ -118,5 +118,4 @@ private:
 public:
 	UFUNCTION(BlueprintCallable, Category = "Player Character")
 	FORCEINLINE EAbilityType GetCurrentAbility() const { return CurrentAbilityType; }
-
 };

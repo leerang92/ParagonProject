@@ -25,6 +25,11 @@ FAbilityInfo UAbilityComponent::GetAbilityInfo(int Index)
 	return AbilityInfo[Index];
 }
 
+FAbilityInfo* UAbilityComponent::GetAbilityInfoPointer(int Index)
+{
+	return &AbilityInfo[Index];
+}
+
 FAbilityInfo UAbilityComponent::GetAbilityInfo(EAbilityType Type)
 {
 	for (auto& info : AbilityInfo)

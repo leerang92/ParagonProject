@@ -115,12 +115,18 @@ void ASerath::SetFly()
 // Wing Blast
 void ASerath::AbilityMR()
 {
-	Super::AbilityMR();
+	FAbilityInfo* Ability = AbilityComp->GetAbilityInfoPointer(1);
+	if (Ability->bUsable)
+	{
+		Ability->bUsable = false;
 
-	PlayAnimMontage(AbilityMRAnim);
+		Super::AbilityMR();
 
-	FVector Origin = GetActorLocation() + GetActorForwardVector() * 200.0f;
-	OnRangeDamage(Origin, 100.0f, 250.0f);
+		PlayAnimMontage(AbilityMRAnim);
+
+		FVector Origin = GetActorLocation() + GetActorForwardVector() * 200.0f;
+		OnRangeDamage(Origin, 100.0f, 250.0f);
+	}
 }
 
 // Heaven's Fury
@@ -130,58 +136,78 @@ void ASerath::AbilityQ()
 	{
 		return;
 	}
-	// Cancel
-	else if (CurrentAbilityType == EAbilityType::AbilityQ)
-	{
-		DecalComp->SetLifeSpan(0.01f);
-		DecalComp = nullptr;
-		PlayAnimMontage(AbilityQAnim, 1.0f, TEXT("Cancel"));
-		CurrentAbilityType = EAbilityType::None;
-	}
-	// Start casting
-	else if (CurrentAbilityType != EAbilityType::AbilityQ)
-	{
-		Super::AbilityQ();
 
-		SetMouseCenterLocation();
-		DecalComp = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), Decal, FVector(140.0f, 140.0f, 140.0f), GetActorLocation());
-		PlayAnimMontage(AbilityQAnim);
+	bool bUsable = AbilityComp->GetAbilityInfo((int)EAbilityType::AbilityQ).bUsable;
+	if (bUsable)
+	{
+		// Cancel
+		if (CurrentAbilityType == EAbilityType::AbilityQ)
+		{
+			DecalComp->SetLifeSpan(0.01f);
+			DecalComp = nullptr;
+			PlayAnimMontage(AbilityQAnim, 1.0f, TEXT("Cancel"));
+			CurrentAbilityType = EAbilityType::None;
+		}
+		// Start casting
+		else if (CurrentAbilityType != EAbilityType::AbilityQ)
+		{
+			SetMouseCenterLocation();
+			DecalComp = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), Decal, FVector(140.0f, 140.0f, 140.0f), GetActorLocation());
+			PlayAnimMontage(AbilityQAnim);
 
-		CurrentAbilityType = EAbilityType::AbilityQ;
+			CurrentAbilityType = EAbilityType::AbilityQ;
+		}
 	}
 }
 
 // Acend
 void ASerath::AbilityE()
 {
-	if (CurrentAbilityType == EAbilityType::AbilityE 
+	if (CurrentAbilityType == EAbilityType::AbilityE
 		|| CurrentAbilityType == EAbilityType::AbilityQ)
 	{
 		return;
 	}
-	Super::AbilityE();
 
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
-	// 중력 제거 및 캐릭터가 날아갈 목표 위치 지정
-	GetCharacterMovement()->GravityScale = 0.0f;
-	FlyTargetVec = GetActorLocation() + GetActorUpVector() * 1500.0f;
-	// 카메라 파티클 생성 및 Ascend 애니메이션 재생
-	SetCameraParticle(AscendCamFX);
-	PlayAnimMontage(AbilityEAnim);
+	bool bUsable = AbilityComp->GetAbilityInfo((int)EAbilityType::AbilityE).bUsable;
 
-	CurrentAbilityType = EAbilityType::AbilityE;
+	if (bUsable)
+	{
+		AbilityComp->GetAbilityInfoPointer((int)EAbilityType::AbilityE)->bUsable = false;
+
+		Super::AbilityE();
+
+		bMovement = false;
+		// 중력 제거 및 캐릭터가 날아갈 목표 위치 지정
+		GetCharacterMovement()->GravityScale = 0.0f;
+		FlyTargetVec = GetActorLocation() + GetActorUpVector() * 1500.0f;
+		// 카메라 파티클 생성 및 Ascend 애니메이션 재생
+		SetCameraParticle(AscendCamFX);
+		PlayAnimMontage(AbilityEAnim);
+
+		CurrentAbilityType = EAbilityType::AbilityE;
+	}
 }
 
 void ASerath::OnHeavenFuryHover()
 {
-	DecalComp->SetLifeSpan(0.001f);
+	FAbilityInfo* Ability = AbilityComp->GetAbilityInfoPointer((int)EAbilityType::AbilityQ);
 
-	bMovement = false;
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	if (Ability->bUsable)
+	{
+		// Set Ability Icon And CoolDown
+		Ability->bUsable = false;
+		SetAbilityHUD((int)EAbilityType::AbilityQ);
 
-	PlayAnimMontage(AbilityQAnim, 1.0f, TEXT("Hover"));
-	float AnimPlayDuration = AbilityQAnim->GetSectionLength(3);
-	GetWorldTimerManager().SetTimer(WaitTimer, this, &ASerath::StopHeavenFury, AnimPlayDuration, false);
+		DecalComp->SetLifeSpan(0.001f);
+
+		bMovement = false;
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+
+		PlayAnimMontage(AbilityQAnim, 1.0f, TEXT("Hover"));
+		float AnimPlayDuration = AbilityQAnim->GetSectionLength(3);
+		GetWorldTimerManager().SetTimer(WaitTimer, this, &ASerath::StopHeavenFury, AnimPlayDuration, false);
+	}
 }
 
 void ASerath::StopHeavenFury()
@@ -253,7 +279,7 @@ void ASerath::MovementAscendAbility(const float DeltaTime)
 			// Reset state
 			CurrentAscendState = EAscendState::None;
 			CurrentAbilityType = EAbilityType::None;
-			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+			bMovement = true;
 		}
 		break;
 	}

@@ -25,8 +25,9 @@ public:
 
 	FAbilityInfo GetAbilityInfo(EAbilityType Type);
 
+	FAbilityInfo* GetAbilityInfoPointer(int Index);
+
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Ability", meta = (AllowedPrivateAccess = true))
 	TArray<FAbilityInfo> AbilityInfo;
-
 };

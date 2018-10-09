@@ -141,10 +141,16 @@ protected:
 	virtual void AbilityE();
 	virtual void Ultimate();
 
-	// Demage to nearby actors
-	void OnRangeDamage(FVector& Origin, float BaseDamage, float DamageRadius);
+	void SetAbilityHUD(int Index);
+
+	FTimerHandle ActiveAbilityTimer;
+
+	virtual void ActiveAbility(int AbilityIndex);
 
 	TArray<AActor*> HitActors;
+
+	// Demage to nearby actors
+	void OnRangeDamage(FVector& Origin, float BaseDamage, float DamageRadius);
 
 	virtual void OnParticleToHitActor();
 

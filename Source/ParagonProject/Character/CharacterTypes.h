@@ -40,10 +40,13 @@ struct FAbilityInfo
 
 	UPROPERTY(EditAnywhere, Category = "Ability")
 	int UsageCountMax;
+	
+	bool bUsable;
 
 	FAbilityInfo() :
 		Image(nullptr),
 		Name(TEXT("Ability Name")),
-		UsageCountMax(1)
+		UsageCountMax(1),
+		bUsable(true)
 	{}
 };

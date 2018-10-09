@@ -230,19 +230,36 @@ void ABaseCharacter::OnAbility()
 /* 스킬 함수들 */
 void ABaseCharacter::AbilityMR()
 {
-	MainUMG->GetAbilityBar()->SetAbilityUI(AbilityComp->GetAbilityInfo(1));
+	SetAbilityHUD(1);
 }
+
 void ABaseCharacter::AbilityQ()
 {
-	MainUMG->GetAbilityBar()->SetAbilityUI(AbilityComp->GetAbilityInfo(2));
+	SetAbilityHUD(2);
 }
 void ABaseCharacter::AbilityE()
 {
-	MainUMG->GetAbilityBar()->SetAbilityUI(AbilityComp->GetAbilityInfo(3));
+	SetAbilityHUD(3);
 }
 void ABaseCharacter::Ultimate()
 {
-	MainUMG->GetAbilityBar()->SetAbilityUI(AbilityComp->GetAbilityInfo(4));
+	SetAbilityHUD(4);
+}
+
+void ABaseCharacter::SetAbilityHUD(int Index)
+{
+	FAbilityInfo Ability = AbilityComp->GetAbilityInfo(Index);
+	MainUMG->GetAbilityBar()->SetAbilityUI(Ability);
+
+	FTimerDelegate RespawnDelegate = FTimerDelegate::CreateUObject(this, &ABaseCharacter::ActiveAbility, Index);
+	FTimerHandle Timer;
+	GetWorldTimerManager().SetTimer(Timer, RespawnDelegate, Ability.CoolDown, false);
+}
+
+void ABaseCharacter::ActiveAbility(int AbilityIndex)
+{
+	UE_LOG(LogClass, Warning, TEXT("Active Ability : %d"), AbilityIndex);
+	AbilityComp->GetAbilityInfoPointer(AbilityIndex)->bUsable = true;
 }
 
 void ABaseCharacter::OnRangeDamage(FVector & Origin, float BaseDamage, float DamageRadius)
