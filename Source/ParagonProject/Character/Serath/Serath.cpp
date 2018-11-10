@@ -3,6 +3,8 @@
 #include "Serath.h"
 #include "Runtime/Engine/Classes/Materials/Material.h"
 #include "Runtime/Engine/Classes/Components/DecalComponent.h"
+#include "Runtime/Engine/Classes/Components/SkeletalMeshComponent.h"
+#include "Runtime/Engine/Classes/Animation/AnimInstance.h"
 #include "DrawDebugHelpers.h"
 
 ASerath::ASerath()
@@ -30,6 +32,12 @@ void ASerath::BeginPlay()
 	Super::BeginPlay();
 
 	CharCon = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+
+	//UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	//if (AnimInst != nullptr)
+	//{
+	//	AnimInst->AddCurveValue(FName("Holy=True"), 1.0f);
+	//}
 }
 
 void ASerath::Tick(float DeltaTime)
@@ -186,6 +194,26 @@ void ASerath::AbilityE()
 		PlayAnimMontage(AbilityEAnim);
 
 		CurrentAbilityType = EAbilityType::AbilityE;
+	}
+}
+
+void ASerath::Ultimate()
+{
+	Super::Ultimate();
+
+	UAnimInstance* AnimInst = GetMesh()->GetAnimInstance();
+	if (AnimInst != nullptr)
+	{
+		float holy = 0.0f;
+		AnimInst->AddCurveValue(FName("Holy=True"), holy);
+		//AnimInst->GetCurveValue(FName("Holy=True"), holy);
+		UE_LOG(LogClass, Warning, TEXT("Set Curve : %f"), AnimInst->GetCurveValue(FName("Holy=True")));
+		/*bool Curve = AnimInst->GetCurveValue(FName("Holy=True"), holy);
+		if (Curve)
+		{
+			UE_LOG(LogClass, Warning, TEXT("Set Curve : %f"), AnimInst->GetCurveValue(FName("Holy=True")));
+
+		}*/
 	}
 }
 

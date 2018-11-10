@@ -84,6 +84,8 @@ private:
 	// Ascend
 	virtual void AbilityE() override;
 
+	virtual void Ultimate() override;
+
 	// Heaven's Fury 능력 사용 중 선택한 범위에 공격 적용
 	void OnHeavenFuryHover();
 
